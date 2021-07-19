@@ -154,7 +154,7 @@ fn main() {
                 let u: f64 = (x1 + random_f64(&0.0, &1.0)) / (image_width as f64 - 1.0);
                 let v: f64 = (y1 + random_f64(&0.0, &1.0)) / (image_height as f64 - 1.0);
                 let r: Ray = cam.get_ray(&u, &v);
-                color += ray_color(&r, &world,  25);
+                color += ray_color(&r, &world, 25);
             }
             let samples_per_pixel: f64 = 1.0;
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
