@@ -27,7 +27,7 @@ impl Hittable for Sphere {
         let a: f64 = r.dir * r.dir;
         let half_b: f64 = r.dir * oc;
         let c: f64 = oc * oc - self.radius * self.radius;
-        let discriminant: f64 = f64::powf(half_b.clone(), 2.0) - a * c;
+        let discriminant: f64 = f64::powf(half_b, 2.0) - a * c;
         if discriminant < 0.0 {
             return false;
         } else {
@@ -51,6 +51,6 @@ impl Hittable for Sphere {
                 return true;
             }
         }
-        return false;
+        false
     }
 }

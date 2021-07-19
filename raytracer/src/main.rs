@@ -31,7 +31,7 @@ fn random_scene() -> HittableList {
     world.add(Rc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
-        ground_material.clone(),
+        ground_material,
     )));
     for a in -11..11 {
         for b in -11..11 {
@@ -64,23 +64,23 @@ fn random_scene() -> HittableList {
     world.add(Rc::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
-        material1.clone(),
+        material1,
     )));
 
     let material2 = Rc::new(Lambertian::new(&Vec3::new(0.4, 0.2, 0.1)));
     world.add(Rc::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
-        material2.clone(),
+        material2,
     )));
 
     let material3 = Rc::new(Metal::new(&Vec3::new(0.7, 0.6, 0.5), 0.0));
     world.add(Rc::new(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
-        material3.clone(),
+        material3,
     )));
-    return world;
+    world
 }
 
 fn ray_color(r: &Ray, world: &impl Hittable, depth: i32) -> Vec3 {
@@ -105,7 +105,7 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32) -> Vec3 {
         {
             return Vec3::elemul(ray_color(&scattered, world, depth - 1), attenuation);
         }
-        return Vec3::new(0.0, 0.0, 0.0);
+        Vec3::new(0.0, 0.0, 0.0)
     } else {
         let unit_direction: Vec3 = r.dir.unit();
         let t: f64 = 0.5 * (unit_direction.y + 1.0);

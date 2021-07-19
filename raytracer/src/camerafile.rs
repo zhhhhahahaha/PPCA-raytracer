@@ -25,8 +25,8 @@ impl Camera {
         aperture: &f64,
         focus_dist: &f64,
     ) -> Self {
-        let theta: f64 = degrees_to_radians(vfov.clone());
-        let h: f64 = f64::tan(theta.clone() / 2.0);
+        let theta: f64 = degrees_to_radians(*vfov);
+        let h: f64 = f64::tan(theta / 2.0);
         let viewport_height: f64 = 2.0 * h;
         let viewport_width: f64 = aspect_ratio * viewport_height;
         let w: Vec3 = (lookfrom - lookat).unit();
@@ -49,11 +49,11 @@ impl Camera {
     pub fn get_ray(&self, s: &f64, t: &f64) -> Ray {
         let rd: Vec3 = random_in_unit_disk() * self.lens_radius;
         let offset: Vec3 = self.u * rd.x + self.v * rd.y;
-        return Ray::new(
+        Ray::new(
             self.origin + offset,
             self.lower_left_corner + self.horizontal * *s + self.vertical * *t
                 - self.origin
                 - offset,
-        );
+        )
     }
 }

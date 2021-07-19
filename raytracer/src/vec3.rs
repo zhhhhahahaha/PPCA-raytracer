@@ -49,11 +49,11 @@ impl Vec3 {
         }
     }
     pub fn random(min: &f64, max: &f64) -> Self {
-        return Vec3::new(
+        Vec3::new(
             random_f64(&min, &max),
             random_f64(&min, &max),
             random_f64(&min, &max),
-        );
+        )
     }
 }
 pub fn random_in_unit_sphere() -> Vec3 {
@@ -66,19 +66,19 @@ pub fn random_in_unit_sphere() -> Vec3 {
     }
 }
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-    return *v - *n * (*v * *n) * 2.0;
+    *v - *n * (*v * *n) * 2.0
 }
 pub fn random_unit_vector() -> Vec3 {
     let a: f64 = random_f64(&0.0, &(2.0 * PI));
     let z: f64 = random_f64(&-1.0, &1.0);
     let r: f64 = (1.0 - z * z).sqrt();
-    return Vec3::new(r * f64::cos(a), r * f64::sin(a), z);
+    Vec3::new(r * f64::cos(a), r * f64::sin(a), z)
 }
 pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: &f64) -> Vec3 {
     let cos_theta: f64 = -*uv * *n;
     let r_out_perp: Vec3 = (*uv + *n * cos_theta) * *etai_over_etat;
     let r_out_parallel: Vec3 = *n * (-(1.0 - r_out_perp.squared_length()).abs().sqrt());
-    return r_out_perp + r_out_parallel;
+    r_out_perp + r_out_parallel
 }
 pub fn random_in_unit_disk() -> Vec3 {
     loop {

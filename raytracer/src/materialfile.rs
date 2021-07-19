@@ -36,7 +36,7 @@ impl Material for Lambertian {
         let scatter_direction: Vec3 = rec.normal + random_unit_vector();
         *scattered = Ray::new(rec.p, scatter_direction);
         *attenuation = self.albedo;
-        return true;
+        true
     }
 }
 #[derive(Clone, Debug, PartialEq, Copy)]
@@ -63,7 +63,7 @@ impl Material for Metal {
         let reflected: Vec3 = reflect(&r_in.dir.unit(), &rec.normal);
         *scattered = Ray::new(rec.p, reflected + random_in_unit_sphere() * self.fuzz);
         *attenuation = self.albedo;
-        return (scattered.dir * rec.normal) > 0.0;
+        (scattered.dir * rec.normal) > 0.0
     }
 }
 #[derive(Clone, Debug, PartialEq, Copy)]
@@ -109,11 +109,11 @@ impl Material for Dielectric {
         }
         let refracted: Vec3 = refract(&unit_direction, &rec.normal, &etai_over_etat);
         *scattered = Ray::new(rec.p, refracted);
-        return true;
+        true
     }
 }
 pub fn schlick(cosine: &f64, ref_idx: &f64) -> f64 {
     let mut r0: f64 = (1.0 - *ref_idx) / (1.0 + *ref_idx);
     r0 *= r0;
-    return r0 + (1.0 - r0) * f64::powf(1.0 - *cosine, 5.0);
+    r0 + (1.0 - r0) * f64::powf(1.0 - *cosine, 5.0)
 }
