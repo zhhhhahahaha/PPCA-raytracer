@@ -1,36 +1,35 @@
-use crate::hit_record;
 use crate::rtweekend::random_f64;
-use crate::vec3;
 use crate::vec3::random_in_unit_sphere;
 use crate::vec3::random_unit_vector;
 use crate::vec3::reflect;
 use crate::vec3::refract;
+use crate::HitRecord;
 use crate::Ray;
 use crate::Vec3;
-pub trait material {
+pub trait Material {
     fn scatter(
         &self,
         r_in: &Ray,
-        rec: &hit_record,
+        rec: &HitRecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool;
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct lambertian {
+pub struct Lambertian {
     pub albedo: Vec3,
 }
-impl lambertian {
+impl Lambertian {
     pub fn new(a: &Vec3) -> Self {
         Self { albedo: *a }
     }
 }
-impl material for lambertian {
+impl Material for Lambertian {
     fn scatter(
         &self,
-        r_in: &Ray,
-        rec: &hit_record,
+        _r_in: &Ray,
+        rec: &HitRecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {
@@ -41,11 +40,11 @@ impl material for lambertian {
     }
 }
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct metal {
+pub struct Metal {
     pub albedo: Vec3,
     pub fuzz: f64,
 }
-impl metal {
+impl Metal {
     pub fn new(a: &Vec3, f: f64) -> Self {
         Self {
             albedo: *a,
@@ -53,11 +52,11 @@ impl metal {
         }
     }
 }
-impl material for metal {
+impl Material for Metal {
     fn scatter(
         &self,
         r_in: &Ray,
-        rec: &hit_record,
+        rec: &HitRecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {
@@ -68,19 +67,19 @@ impl material for metal {
     }
 }
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct dielectric {
+pub struct Dielectric {
     pub ref_idx: f64,
 }
-impl dielectric {
+impl Dielectric {
     pub fn new(ref_idx: &f64) -> Self {
         Self { ref_idx: *ref_idx }
     }
 }
-impl material for dielectric {
+impl Material for Dielectric {
     fn scatter(
         &self,
         r_in: &Ray,
-        rec: &hit_record,
+        rec: &HitRecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {

@@ -4,7 +4,7 @@ use crate::Ray;
 use crate::Vec3;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct camera {
+pub struct Camera {
     origin: Vec3,
     lower_left_corner: Vec3,
     horizontal: Vec3,
@@ -15,7 +15,7 @@ pub struct camera {
     lens_radius: f64,
 }
 
-impl camera {
+impl Camera {
     pub fn new(
         lookfrom: Vec3,
         lookat: Vec3,

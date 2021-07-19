@@ -1,5 +1,5 @@
 use crate::random_f64;
-use crate::rtweekend::pi;
+use crate::rtweekend::PI;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {
@@ -13,14 +13,14 @@ impl Vec3 {
         Self { x, y, z }
     }
 
-    pub fn ones() -> Self {
+    /*pub fn ones() -> Self {
         Self::new(1.0, 1.0, 1.0)
     }
 
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
-
+    */
     pub fn squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
@@ -64,13 +64,12 @@ pub fn random_in_unit_sphere() -> Vec3 {
         }
         return p;
     }
-    return Vec3::new(0.0, 0.0, 0.0);
 }
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
     return *v - *n * (*v * *n) * 2.0;
 }
 pub fn random_unit_vector() -> Vec3 {
-    let a: f64 = random_f64(&0.0, &(2.0 * pi));
+    let a: f64 = random_f64(&0.0, &(2.0 * PI));
     let z: f64 = random_f64(&-1.0, &1.0);
     let r: f64 = (1.0 - z * z).sqrt();
     return Vec3::new(r * f64::cos(a), r * f64::sin(a), z);
