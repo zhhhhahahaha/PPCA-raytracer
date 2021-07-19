@@ -1,5 +1,5 @@
 use crate::random_f64;
-use crate::rtweekend::PI;
+use std::f64::consts::PI;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {

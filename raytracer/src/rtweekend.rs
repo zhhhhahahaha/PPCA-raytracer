@@ -1,6 +1,6 @@
 use rand::{thread_rng, Rng};
+use std::f64::consts::PI;
 
-pub const PI: f64 = 3.141_592_653_589_793;
 pub const INFINITY: f64 = f64::INFINITY;
 pub fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
