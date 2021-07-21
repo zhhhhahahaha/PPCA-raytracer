@@ -177,18 +177,18 @@ fn main() {
     println!("{:?}", x);
 
     //image
-    let mut img: RgbImage = ImageBuffer::new(400, 225);
+    let mut img: RgbImage = ImageBuffer::new(600, 600);
     let bar = ProgressBar::new(1024);
-    let aspect_ratio: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: i32 = 400;
-    const IMAGE_HEIGHT: i32 = 225; //IMAGE_WIDTH / aspect_ratio
-    let samples_per_pixel: i32 = 400;
+    let aspect_ratio: f64 = 1.0;
+    const IMAGE_WIDTH: i32 = 600;
+    const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
+    let samples_per_pixel: i32 = 200;
     //world
-    let world = simple_light();
+    let world = cornell_box();
 
     //Camera
-    let lookfrom: Vec3 = Vec3::new(26.0, 3.0, 6.0);
-    let lookat: Vec3 = Vec3::new(0.0, 2.0, 0.0);
+    let lookfrom: Vec3 = Vec3::new(278.0, 278.0, -800.0);
+    let lookat: Vec3 = Vec3::new(278.0, 278.0, 0.0);
     let vup: Vec3 = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus: f64 = 10.0;
     let aperture: f64 = 0.0;
@@ -197,7 +197,7 @@ fn main() {
         lookfrom,
         lookat,
         vup,
-        &20.0,
+        &40.0,
         &aspect_ratio,
         &aperture,
         &dist_to_focus,
@@ -217,7 +217,7 @@ fn main() {
                 let r: Ray = cam.get_ray(&u, &v);
                 color += ray_color(&r, background, &world, 50);
             }
-            let samples_per_pixel: f64 = 400.0;
+            let samples_per_pixel: f64 = 200.0;
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
             let green = (255.999 * ((color.y / samples_per_pixel).sqrt())) as u8;
             let blue = (255.999 * ((color.z / samples_per_pixel).sqrt())) as u8;
