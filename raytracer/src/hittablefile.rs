@@ -1,6 +1,7 @@
 use crate::materialfile::Material;
 use crate::Ray;
 use crate::Vec3;
+use crate::AABB;
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -9,6 +10,8 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub mat_ptr: Rc<dyn Material>,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub front_face: bool,
 }
 
@@ -24,4 +27,5 @@ impl HitRecord {
 }
 pub trait Hittable {
     fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool;
+    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool;
 }

@@ -1,3 +1,4 @@
+use crate::random_f64;
 use crate::rtweekend::degrees_to_radians;
 use crate::vec3::random_in_unit_disk;
 use crate::Ray;
@@ -13,6 +14,8 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f64,
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
@@ -24,6 +27,8 @@ impl Camera {
         aspect_ratio: &f64,
         aperture: &f64,
         focus_dist: &f64,
+        time0: f64,
+        time1: f64,
     ) -> Self {
         let theta: f64 = degrees_to_radians(*vfov);
         let h: f64 = f64::tan(theta / 2.0);
@@ -44,6 +49,8 @@ impl Camera {
             u,
             v,
             lens_radius: aperture / 2.0,
+            time0,
+            time1,
         }
     }
     pub fn get_ray(&self, s: &f64, t: &f64) -> Ray {
@@ -54,6 +61,7 @@ impl Camera {
             self.lower_left_corner + self.horizontal * *s + self.vertical * *t
                 - self.origin
                 - offset,
+            random_f64(self.time0, self.time1),
         )
     }
 }

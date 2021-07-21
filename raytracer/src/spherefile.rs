@@ -3,6 +3,8 @@ use crate::HitRecord;
 use crate::Hittable;
 use crate::Ray;
 use crate::Vec3;
+use crate::AABB;
+use std::f64::consts::PI;
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -18,6 +20,12 @@ impl Sphere {
             radius,
             mat_ptr: m,
         }
+    }
+    fn get_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
+        let theta: f64 = -p.y.acos();
+        let phi: f64 = f64::atan2(-p.z, p.x) + PI;
+        *u = phi / (2.0 * PI);
+        *v = theta / PI;
     }
 }
 
@@ -38,6 +46,7 @@ impl Hittable for Sphere {
                 rec.p = r.at(t);
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
+                Sphere::get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
                 rec.mat_ptr = self.mat_ptr.clone();
                 return true;
             }
@@ -47,10 +56,18 @@ impl Hittable for Sphere {
                 rec.p = r.at(t);
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
+                Sphere::get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
                 rec.mat_ptr = self.mat_ptr.clone();
                 return true;
             }
         }
         false
+    }
+    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
+        *output_box = AABB::new(
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        true
     }
 }

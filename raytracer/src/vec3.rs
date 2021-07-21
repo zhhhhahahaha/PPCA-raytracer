@@ -48,17 +48,26 @@ impl Vec3 {
             z: self.z / Self::length(&self),
         }
     }
-    pub fn random(min: &f64, max: &f64) -> Self {
+    pub fn random(min: f64, max: f64) -> Self {
         Vec3::new(
-            random_f64(&min, &max),
-            random_f64(&min, &max),
-            random_f64(&min, &max),
+            random_f64(min, max),
+            random_f64(min, max),
+            random_f64(min, max),
         )
+    }
+    pub fn getcoordinate(&self, i: i32) -> f64 {
+        if i == 0 {
+            return self.x;
+        } else if i == 1 {
+            return self.y;
+        } else {
+            self.z
+        }
     }
 }
 pub fn random_in_unit_sphere() -> Vec3 {
     loop {
-        let p: Vec3 = Vec3::random(&-1.0, &1.0);
+        let p: Vec3 = Vec3::random(-1.0, 1.0);
         if p.squared_length() >= 1.0 {
             continue;
         }
@@ -69,8 +78,8 @@ pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
     *v - *n * (*v * *n) * 2.0
 }
 pub fn random_unit_vector() -> Vec3 {
-    let a: f64 = random_f64(&0.0, &(2.0 * PI));
-    let z: f64 = random_f64(&-1.0, &1.0);
+    let a: f64 = random_f64(0.0, 2.0 * PI);
+    let z: f64 = random_f64(-1.0, 1.0);
     let r: f64 = (1.0 - z * z).sqrt();
     Vec3::new(r * f64::cos(a), r * f64::sin(a), z)
 }
@@ -82,7 +91,7 @@ pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: &f64) -> Vec3 {
 }
 pub fn random_in_unit_disk() -> Vec3 {
     loop {
-        let p: Vec3 = Vec3::new(random_f64(&-1.0, &1.0), random_f64(&-1.0, &1.0), 0.0);
+        let p: Vec3 = Vec3::new(random_f64(-1.0, 1.0), random_f64(-1.0, 1.0), 0.0);
         if p.squared_length() >= 1.0 {
             continue;
         }
