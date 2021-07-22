@@ -42,7 +42,7 @@ fn cornell_box() -> HittableList {
     let red = Rc::new(Lambertian::new2(&Vec3::new(0.65, 0.05, 0.05)));
     let white = Rc::new(Lambertian::new2(&Vec3::new(0.73, 0.73, 0.73)));
     let green = Rc::new(Lambertian::new2(&Vec3::new(0.12, 0.45, 0.15)));
-    let light = Rc::new(DiffuseLight::new2(Vec3::new(1.0, 1.0, 1.0)));
+    let light = Rc::new(DiffuseLight::new2(Vec3::new(15.0, 15.0, 15.0)));
     
     objects.add(Rc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
     objects.add(Rc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
@@ -168,7 +168,7 @@ fn ray_color(r: &Ray,background: Vec3, world: &impl Hittable, depth: i32) -> Vec
     {
         return emitted;
     }
-    emitted + attenuation * ray_color(&scattered, background, world, depth -1)
+    emitted + Vec3::elemul(attenuation, ray_color(&scattered, background, world, depth -1))
     
 }
 
@@ -182,7 +182,7 @@ fn main() {
     let aspect_ratio: f64 = 1.0;
     const IMAGE_WIDTH: i32 = 600;
     const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
-    let samples_per_pixel: i32 = 200;
+    let samples_per_pixel: i32 = 20;
     //world
     let world = cornell_box();
 
@@ -217,7 +217,7 @@ fn main() {
                 let r: Ray = cam.get_ray(&u, &v);
                 color += ray_color(&r, background, &world, 50);
             }
-            let samples_per_pixel: f64 = 200.0;
+            let samples_per_pixel: f64 = 20.0;
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
             let green = (255.999 * ((color.y / samples_per_pixel).sqrt())) as u8;
             let blue = (255.999 * ((color.z / samples_per_pixel).sqrt())) as u8;
