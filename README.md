@@ -1,3 +1,19 @@
+必做部分：
+
+- [x] book 1
+- [x] 3 BVH
+- [x] 7 Rectangles and Lights
+
+选做部分：
+
+- [x] 2 Motion Blur
+- [x] 4 Solid Textures
+- [x] 5 Perlin Noise
+- [x] 6 Image Texture Mapping
+- [x] 8 Instances
+- [x] 9 Volumes
+- [ ] 10 book 2 final scene
+
 ![banner](https://user-images.githubusercontent.com/4198311/89027545-461dd180-d35d-11ea-9972-7bf1b07f942d.png)
 
 # Pseudo Photograph Company of ACM
