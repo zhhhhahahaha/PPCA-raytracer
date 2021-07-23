@@ -13,14 +13,13 @@ impl Vec3 {
         Self { x, y, z }
     }
 
-    /*pub fn ones() -> Self {
+    pub fn ones() -> Self {
         Self::new(1.0, 1.0, 1.0)
     }
 
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
-    */
     pub fn squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
