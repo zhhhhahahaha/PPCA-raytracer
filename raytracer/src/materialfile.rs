@@ -61,9 +61,9 @@ pub struct Metal {
     pub fuzz: f64,
 }
 impl Metal {
-    pub fn new(a: &Vec3, f: f64) -> Self {
+    pub fn new(a: Vec3, f: f64) -> Self {
         Self {
-            albedo: *a,
+            albedo: a,
             fuzz: if f < 1.0 { f } else { 1.0 },
         }
     }
@@ -92,8 +92,8 @@ pub struct Dielectric {
     pub ref_idx: f64,
 }
 impl Dielectric {
-    pub fn new(ref_idx: &f64) -> Self {
-        Self { ref_idx: *ref_idx }
+    pub fn new(ref_idx: f64) -> Self {
+        Self { ref_idx: ref_idx }
     }
 }
 impl Material for Dielectric {

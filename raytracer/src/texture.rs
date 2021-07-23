@@ -107,7 +107,10 @@ impl Texture for ImageTexture {
         if i >= self.width {i = self.width - 1;}
         if j >=self.height {j = self.height - 1;}
         let color_scale: f64 = 1.0 / 255.0;
-        let coordinate: usize = (1 + j * self.bytes_per_scanline + i * 3) as usize;
-        Vec3::new(self.data[coordinate] as f64 * color_scale, self.data[coordinate + 1] as f64 * color_scale, self.data[coordinate + 2] as f64 * color_scale)
+        let coordinate: usize = (j * self.bytes_per_scanline + i * 3) as usize;
+        Vec3::new(self.data[coordinate] as f64 * color_scale, 
+                  self.data[coordinate + 1] as f64 * color_scale, 
+                  self.data[coordinate + 2] as f64 * color_scale)
+        
     }
 }

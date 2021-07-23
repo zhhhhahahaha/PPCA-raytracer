@@ -60,14 +60,14 @@ impl Hittable for Translate {
     }
 }
 #[derive(Clone)]
-pub struct Rotate_y {
+pub struct Rotatey {
     ptr: Rc<dyn Hittable>,
     sin_theta: f64,
     cos_theta: f64,
     hasbox: bool,
     bbox: AABB,
 }
-impl Rotate_y {
+impl Rotatey {
     pub fn new(p: Rc<dyn Hittable>, angle: f64) -> Self {
         let radians: f64 = degrees_to_radians(angle);
         let sin_theta = f64::sin(radians);
@@ -115,7 +115,7 @@ impl Rotate_y {
         }
    }  
 }
-impl Hittable for Rotate_y {
+impl Hittable for Rotatey {
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         *output_box = self.bbox;
          self.hasbox

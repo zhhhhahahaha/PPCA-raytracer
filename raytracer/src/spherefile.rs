@@ -22,7 +22,7 @@ impl Sphere {
         }
     }
     fn get_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
-        let theta: f64 = -p.y.acos();
+        let theta: f64 = (-p.y).acos();
         let phi: f64 = f64::atan2(-p.z, p.x) + PI;
         *u = phi / (2.0 * PI);
         *v = theta / PI;

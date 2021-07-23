@@ -27,7 +27,7 @@ impl Hittable for HittableList {
         let mut temp_rec = HitRecord {
             p: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
-            mat_ptr: Rc::new(Metal::new(&Vec3::new(0.0, 0.0, 0.0), 0.5)),
+            mat_ptr: Rc::new(Metal::new(Vec3::new(0.0, 0.0, 0.0), 0.5)),
             t: 0.0,
             u: 0.0,
             v: 0.0,
