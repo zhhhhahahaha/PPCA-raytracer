@@ -189,7 +189,7 @@ fn main() {
     let aspect_ratio: f64 = 1.0;
     const IMAGE_WIDTH: i32 = 600;
     const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
-    let samples_per_pixel: i32 = 20;
+    let samples_per_pixel: i32 = 200;
     //world
     let world = cornell_smoke();
 
@@ -224,7 +224,7 @@ fn main() {
                 let r: Ray = cam.get_ray(&u, &v);
                 color += ray_color(&r, background, &world, 50);
             }
-            let samples_per_pixel: f64 = 20.0;
+            let samples_per_pixel: f64 = 200.0;
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
             let green = (255.999 * ((color.y / samples_per_pixel).sqrt())) as u8;
             let blue = (255.999 * ((color.z / samples_per_pixel).sqrt())) as u8;
