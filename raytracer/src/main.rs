@@ -39,7 +39,7 @@ use bvh::BvhNode;
 
 use crate::rtweekend::random_f64;
 
-
+/*
 fn final_scene() -> HittableList {
     let mut boxes1 = HittableList::new();
     let ground = Rc::new(Lambertian::new2(&Vec3::new(0.48, 0.83, 0.53)));
@@ -115,7 +115,11 @@ fn cornell_smoke() -> HittableList {
     objects.add(Rc::new(ConstantMedium::new2(box2, 0.01, Vec3::new(1.0, 1.0, 1.0))));
     objects
 }
+<<<<<<< HEAD
 
+=======
+*/
+>>>>>>> 4af30e1c67849c9d99e2fd1f931d9421ecc9a3c8
 fn cornell_box() -> HittableList {
     let mut objects = HittableList::new();
     let red = Rc::new(Lambertian::new2(&Vec3::new(0.65, 0.05, 0.05)));
@@ -139,7 +143,11 @@ fn cornell_box() -> HittableList {
     objects.add(box2);
     objects
 }
+<<<<<<< HEAD
 
+=======
+/* 
+>>>>>>> 4af30e1c67849c9d99e2fd1f931d9421ecc9a3c8
 fn simple_light () -> HittableList {
     let mut objects = HittableList::new();
     let pertext = Rc::new(NoiseTexture::new(4.0));
@@ -225,7 +233,7 @@ fn random_scene() -> HittableList {
     )));
     world
 }
-
+*/
 fn ray_color(r: &Ray,background: Vec3, world: &impl Hittable, depth: i32) -> Vec3 {
     let mut rec = HitRecord {
         p: Vec3::new(0.0, 0.0, 0.0),
@@ -265,7 +273,11 @@ fn main() {
     let aspect_ratio: f64 = 1.0;
     const IMAGE_WIDTH: i32 = 600;
     const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
+<<<<<<< HEAD
     let samples_per_pixel: i32 = 100;
+=======
+    let samples_per_pixel: i32 = 300;
+>>>>>>> 4af30e1c67849c9d99e2fd1f931d9421ecc9a3c8
     //world
     let world = cornell_box();
 
@@ -300,7 +312,11 @@ fn main() {
                 let r: Ray = cam.get_ray(&u, &v);
                 color += ray_color(&r, background, &world, 50);
             }
+<<<<<<< HEAD
             let samples_per_pixel: f64 = 100.0;
+=======
+            let samples_per_pixel: f64 = 300.0;
+>>>>>>> 4af30e1c67849c9d99e2fd1f931d9421ecc9a3c8
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
             let green = (255.999 * ((color.y / samples_per_pixel).sqrt())) as u8;
             let blue = (255.999 * ((color.z / samples_per_pixel).sqrt())) as u8;
