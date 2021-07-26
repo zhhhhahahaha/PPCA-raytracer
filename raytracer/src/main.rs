@@ -39,7 +39,7 @@ use bvh::BvhNode;
 
 use crate::rtweekend::random_f64;
 
-
+/*
 fn final_scene() -> HittableList {
     let mut boxes1 = HittableList::new();
     let ground = Rc::new(Lambertian::new2(&Vec3::new(0.48, 0.83, 0.53)));
@@ -115,7 +115,31 @@ fn cornell_smoke() -> HittableList {
     objects.add(Rc::new(ConstantMedium::new2(box2, 0.01, Vec3::new(1.0, 1.0, 1.0))));
     objects
 }
-
+*/
+fn cornell_box() -> HittableList {
+    let mut objects = HittableList::new();
+    let red = Rc::new(Lambertian::new2(&Vec3::new(0.65, 0.05, 0.05)));
+    let white = Rc::new(Lambertian::new2(&Vec3::new(0.73, 0.73, 0.73)));
+    let green = Rc::new(Lambertian::new2(&Vec3::new(0.12, 0.45, 0.15)));
+    let light = Rc::new(DiffuseLight::new2(Vec3::new(15.0, 15.0, 15.0)));
+    
+    objects.add(Rc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+    objects.add(Rc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.add(Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light)));
+    objects.add(Rc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
+    objects.add(Rc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+    objects.add(Rc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+    let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone()));
+    box1 = Rc::new(Rotatey::new(box1, 15.0));
+    box1 = Rc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+    objects.add(box1);
+    let mut box2: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 165.0, 165.0), white.clone()));
+    box2 = Rc::new(Rotatey::new(box2, -18.0));
+    box2 = Rc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+    objects.add(box2);
+    objects
+}
+/* 
 fn simple_light () -> HittableList {
     let mut objects = HittableList::new();
     let pertext = Rc::new(NoiseTexture::new(4.0));
@@ -201,7 +225,7 @@ fn random_scene() -> HittableList {
     )));
     world
 }
-
+*/
 fn ray_color(r: &Ray,background: Vec3, world: &impl Hittable, depth: i32) -> Vec3 {
     let mut rec = HitRecord {
         p: Vec3::new(0.0, 0.0, 0.0),
@@ -238,17 +262,17 @@ fn main() {
     println!("{:?}", x);
 
     //image
-    let mut img: RgbImage = ImageBuffer::new(800, 800);
-    let bar = ProgressBar::new(1024);
+    let mut img: RgbImage = ImageBuffer::new(600, 600);
+    let bar = ProgressBar::new(600);
     let aspect_ratio: f64 = 1.0;
-    const IMAGE_WIDTH: i32 = 800;
-    const IMAGE_HEIGHT: i32 = 800; //IMAGE_WIDTH / aspect_ratio
-    let samples_per_pixel: i32 = 1000;
+    const IMAGE_WIDTH: i32 = 600;
+    const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
+    let samples_per_pixel: i32 = 300;
     //world
-    let world = final_scene();
+    let world = cornell_box();
 
     //Camera
-    let lookfrom: Vec3 = Vec3::new(478.0, 278.0, -600.0);
+    let lookfrom: Vec3 = Vec3::new(278.0, 278.0, -800.0);
     let lookat: Vec3 = Vec3::new(278.0, 278.0, 0.0);
     let vup: Vec3 = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus: f64 = 10.0;
@@ -278,7 +302,7 @@ fn main() {
                 let r: Ray = cam.get_ray(&u, &v);
                 color += ray_color(&r, background, &world, 50);
             }
-            let samples_per_pixel: f64 = 1000.0;
+            let samples_per_pixel: f64 = 300.0;
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
             let green = (255.999 * ((color.y / samples_per_pixel).sqrt())) as u8;
             let blue = (255.999 * ((color.z / samples_per_pixel).sqrt())) as u8;
