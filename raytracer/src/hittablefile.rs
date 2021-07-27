@@ -29,6 +29,12 @@ impl HitRecord {
 pub trait Hittable {
     fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool;
+    fn pdf_value(&self, o: Vec3, v: Vec3) -> f64 {
+        0.0
+    }
+    fn random(&self, o: Vec3) -> Vec3 {
+        Vec3::new(1.0, 0.0, 0.0)
+    }
 }
 #[derive(Clone)]
 pub struct Translate {
@@ -140,5 +146,25 @@ impl Hittable for Rotatey {
         rec.p = p;
         rec.set_face_normal(rotated_r, normal);
         true
+    }
+}
+
+#[derive(Clone)]
+pub struct FlipFace {
+    pub ptr: Rc<dyn Hittable>,
+}
+impl FlipFace {
+    pub fn new(p: Rc<dyn Hittable>) -> Self {
+        Self{ptr:p}
+    }
+}
+impl Hittable for FlipFace {
+    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool {
+        if !self.ptr.hit(r, t_min, t_max, rec) {return false;}
+        rec.front_face = !rec.front_face;
+        true
+    }
+    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
+        self.ptr.bounding_box(time0, time1, output_box)
     }
 }

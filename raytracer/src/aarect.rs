@@ -4,7 +4,9 @@ use crate::Ray;
 use crate::Vec3;
 use crate::HitRecord;
 use crate::AABB;
+use crate::rtweekend::random_f64;
 use std::rc::Rc;
+use crate::Lambertian;
 
 #[derive(Clone)]
 pub struct XYRect {
@@ -84,6 +86,28 @@ impl Hittable for XZRect {
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(Vec3::new(self.x0, self.k - 0.0001, self.z0), Vec3::new(self.x1, self.k + 0.0001, self.z1));
         true
+    }
+    fn pdf_value(&self, o: Vec3, v: Vec3) -> f64 {
+        let mut rec = HitRecord {
+            p: Vec3::new(0.0, 0.0, 0.0),
+            normal: Vec3::new(0.0, 0.0, 0.0),
+            mat_ptr: Rc::new(Lambertian::new2(&Vec3::new(0.0, 0.0, 0.0))),
+            t: 0.0,
+            u: 0.0,
+            v: 0.0,
+            front_face: false,
+        };
+        if !self.hit(Ray::new(o, v, 0.0), &0.001, &f64::INFINITY, &mut rec) {
+            return 0.0;
+        }
+        let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+        let distance_squared = rec.t * rec.t * v.squared_length();
+        let cosine = (v * rec.normal / v.length()).abs();
+        distance_squared / (cosine * area)
+    }
+    fn random(&self, o: Vec3) -> Vec3 {
+        let random_point = Vec3::new(random_f64(self.x0, self.x1), self.k, random_f64(self.z0, self.z1));
+        random_point - o
     }
 }
 

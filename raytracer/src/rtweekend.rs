@@ -1,5 +1,6 @@
 use rand::{thread_rng, Rng};
 use std::f64::consts::PI;
+use crate::Vec3;
 
 pub const INFINITY: f64 = f64::INFINITY;
 pub fn degrees_to_radians(degrees: f64) -> f64 {
@@ -35,4 +36,13 @@ pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
         return max;
     }
     x
+}
+pub fn random_cosine_direction() ->Vec3 {
+    let r1 = random_f64(0.0, 1.0);
+    let r2 = random_f64(0.0, 1.0);
+    let z = (1.0 - r2).sqrt();
+    let phi = 2.0 * PI * r1;
+    let x = f64::cos(phi) * r2.sqrt();
+    let y = f64::sin(phi) * r2.sqrt();
+    Vec3::new(x, y, z)
 }

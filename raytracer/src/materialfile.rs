@@ -1,4 +1,4 @@
-use crate::rtweekend::random_f64;
+use crate::rtweekend::{random_f64,random_cosine_direction};
 use crate::vec3::random_in_hemisphere;
 use crate::vec3::random_in_unit_sphere;
 use crate::vec3::random_unit_vector;
@@ -11,6 +11,7 @@ use crate::Texture;
 use crate::Vec3;
 use std::rc::Rc;
 use std::f64::consts::PI;
+use crate::Onb;
 
 pub trait Material {
     fn scatter(
@@ -23,7 +24,7 @@ pub trait Material {
     ) -> bool{
         false
     }
-    fn emitted(&self, u: f64, v:f64, p: Vec3) -> Vec3 {
+    fn emitted(&self, rec:&HitRecord,u: f64, v:f64, p: Vec3) -> Vec3 {
         Vec3::new(0.0, 0.0, 0.0)
     }
     fn scattering_pdf(&self, r_in: Ray, rec:HitRecord, scattered: Ray) -> f64 {
@@ -54,13 +55,14 @@ impl Material for Lambertian {
         scattered: &mut Ray,
         pdf: &mut f64,
     ) -> bool {
-        let mut scatter_direction: Vec3 = rec.normal + random_unit_vector();
+        let uvw = Onb::new(rec.normal);
+        let mut scatter_direction: Vec3 = uvw.localbyvector(random_cosine_direction());
         if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
         }
         *scattered = Ray::new(rec.p, scatter_direction.unit(), r_in.tm);
         *attenuation = self.albedo.value(rec.u, rec.v, rec.p);
-        *pdf = rec.normal * scattered.dir / PI;
+        *pdf = uvw.axis[2] * scattered.dir / PI;
         true
     }
     fn scattering_pdf(&self, r_in: Ray, rec: HitRecord, scattered:Ray) -> f64 {
@@ -172,8 +174,10 @@ impl Material for DiffuseLight {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Vec3, scattered: &mut Ray, pdf: &mut f64) -> bool {
         false
     }
-    fn emitted(&self, u: f64, v:f64, p: Vec3) -> Vec3 {
-        self.emit.value(u, v, p)
+    fn emitted(&self, rec:&HitRecord,u: f64, v:f64, p: Vec3) -> Vec3 {
+        if rec.front_face {
+        self.emit.value(u, v, p)}
+        else {Vec3::new(0.0, 0.0, 0.0)}
     }
 }
 #[derive(Clone)]
