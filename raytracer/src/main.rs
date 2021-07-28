@@ -280,7 +280,7 @@ fn main() {
     //world
     let world = cornell_box();
     let mut lights = HittableList::new();
-    //lights.add(Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
+    lights.add(Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
     lights.add(Rc::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0,Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
 
 
