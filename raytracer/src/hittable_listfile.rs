@@ -5,6 +5,7 @@ use crate::Metal;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
+use crate::rtweekend::random_i32;
 use std::rc::Rc;
 use std::vec::Vec;
 #[derive(Clone)]
@@ -62,5 +63,17 @@ impl Hittable for HittableList {
             first_box = false;
         }
         true
+    }
+    fn pdf_value(&self, o: Vec3, v: Vec3) -> f64 {
+        let weight = 1.0 / (self.objects.len() as f64);
+        let mut sum = 0.0;
+        for object in &self.objects {
+            sum += weight * object.pdf_value(o, v);
+        }
+        sum
+    }
+    fn random(&self, o: Vec3) -> Vec3 {
+        let int_size = self.objects.len() as i32;
+        self.objects[random_i32(0, int_size - 1) as usize].random(o)
     }
 }

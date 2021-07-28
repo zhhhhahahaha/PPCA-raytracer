@@ -4,6 +4,9 @@ use crate::Hittable;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
+use crate::Onb;
+use crate::Lambertian;
+use crate::rtweekend::random_f64;
 use std::f64::consts::PI;
 use std::rc::Rc;
 
@@ -70,4 +73,38 @@ impl Hittable for Sphere {
         );
         true
     }
+    fn pdf_value(&self, o: Vec3, v: Vec3) -> f64 {
+        let mut rec = HitRecord {
+            p: Vec3::new(0.0, 0.0, 0.0),
+            normal: Vec3::new(0.0, 0.0, 0.0),
+            mat_ptr: Rc::new(Lambertian::new2(&Vec3::new(0.0, 0.0, 0.0))),
+            t: 0.0,
+            u: 0.0,
+            v: 0.0,
+            front_face: false,
+        };
+        if !self.hit(Ray::new(o, v, 0.0), &0.001, &f64::INFINITY, &mut rec){
+            return 0.0;
+        }
+        let cos_theta_max = (1.0 - self.radius * self.radius / (self.center - o).squared_length()).sqrt();
+        let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
+        1.0 / solid_angle
+    }
+    fn random(&self, o: Vec3) -> Vec3 {
+        let direction = self.center - o;
+        let distance_squared = direction.squared_length();
+        let uvw = Onb::new(direction);
+        uvw.localbyvector(random_to_sphere(self.radius, distance_squared))
+    }
+}
+pub fn random_to_sphere(radius:f64, distance_squared:f64) -> Vec3 {
+    let r1 = random_f64(0.0, 1.0);
+    let r2 = random_f64(0.0, 1.0);
+    let z = 1.0 + r2 * ((1.0 - radius * radius / distance_squared).sqrt() - 1.0);
+
+    let phi = 2.0 * PI * r1;
+    let x = f64::cos(phi) * (1.0 - z * z).sqrt();
+    let y = f64::sin(phi) * (1.0 - z * z).sqrt();
+
+    Vec3::new(x, y, z)
 }

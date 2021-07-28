@@ -24,7 +24,7 @@ use hittable_listfile::HittableList;
 use hittablefile::{HitRecord,Hittable,Translate, Rotatey, FlipFace};
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
-use materialfile::{Dielectric,Metal,Lambertian, DiffuseLight,Material,Isotropic};
+use materialfile::{Dielectric,Metal,Lambertian, DiffuseLight,Material,Isotropic,ScatterRecord};
 use moving_sphere::MovingSphere;
 use ray::Ray;
 use rtweekend::INFINITY;
@@ -132,14 +132,15 @@ fn cornell_box() -> HittableList {
     objects.add(Rc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
     objects.add(Rc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     objects.add(Rc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
-    let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone()));
+    let aluminum = Rc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
+    let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), aluminum.clone()));
     box1 = Rc::new(Rotatey::new(box1, 15.0));
     box1 = Rc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
     objects.add(box1);
-    let mut box2: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 165.0, 165.0), white.clone()));
-    box2 = Rc::new(Rotatey::new(box2, -18.0));
-    box2 = Rc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
-    objects.add(box2);
+
+    let glass = Rc::new(Dielectric::new(1.5));
+    objects.add(Rc::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0, glass.clone())));
+
     objects
 }
 /* 
@@ -230,7 +231,7 @@ fn random_scene() -> HittableList {
 }
 */
 
-fn ray_color(r: &Ray,background: Vec3, world: &impl Hittable,lights: &Rc<dyn Hittable>, depth: i32) -> Vec3 {
+fn ray_color(r: &Ray,background: Vec3, world: &impl Hittable,lights: & HittableList, depth: i32) -> Vec3 {
     let mut rec = HitRecord {
         p: Vec3::new(0.0, 0.0, 0.0),
         normal: Vec3::new(0.0, 0.0, 0.0),
@@ -246,33 +247,23 @@ fn ray_color(r: &Ray,background: Vec3, world: &impl Hittable,lights: &Rc<dyn Hit
     if !world.hit(*r, &0.001, &INFINITY, &mut rec) {
         return background;
     }
-    let mut scattered: Ray = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0), 0.0);
-    let mut attenuation: Vec3 = Vec3::new(0.0, 0.0, 0.0);
-    let emitted: Vec3 = rec.mat_ptr.emitted(&rec, rec.u, rec.v, rec.p);
-    let mut pdf_value: f64 = 0.0;
-    if !rec
-        .mat_ptr
-        .scatter(&r, &rec, &mut attenuation, &mut scattered,&mut pdf_value)
-    {
+    let mut srec = ScatterRecord {specular_ray:Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
+                                           is_specular:false,
+                                           attenuation: Vec3::zero(),
+                                           pdf_ptr: Rc::new(CosinePdf::new(Vec3::zero())),};
+    let emitted = rec.mat_ptr.emitted(*r, &rec, rec.u, rec.v, rec.p);
+    if !rec.mat_ptr.scatter(&r, &rec, &mut srec) {
         return emitted;
     }
-    let p0 = Rc::new(HittablePdf::new(lights.clone(), rec.p));
-    let p1 = Rc::new(CosinePdf::new(rec.normal));
-    let mixed_pdf = MixturePdf::new(p0, p1);
-    scattered = Ray::new(rec.p, mixed_pdf.generate(), r.tm);
-    pdf_value = mixed_pdf.value(scattered.dir);
-    /* 
-    let on_light = Vec3::new(random_f64(213.0, 343.0), 554.0, random_f64(227.0, 332.0));
-    let mut to_light = on_light - rec.p;
-    let distance_square = to_light.squared_length();
-    to_light = to_light.unit();
-    if to_light * rec.normal < 0.0 {return emitted;}
-    let light_area = (343.0 - 213.0) * (332.0 - 227.0);
-    let light_cosine = to_light.y.abs();
-    if light_cosine < 0.000001 {return emitted;}
-    pdf = distance_square / (light_cosine * light_area);
-    scattered = Ray::new(rec.p, to_light, r.tm);*/
-    emitted + Vec3::elemul(attenuation, ray_color(&scattered, background, world, lights,depth -1)) * rec.mat_ptr.scattering_pdf(*r, rec.clone(), scattered) / pdf_value
+    if srec.is_specular {
+        return Vec3::elemul(srec.attenuation, ray_color(&srec.specular_ray, background, world, lights, depth - 1));
+    }
+    let lights_ptr:Rc<HittableList> = Rc::new(lights.clone());
+    let light_ptr = Rc::new(HittablePdf::new(lights_ptr, rec.p));
+    let p = MixturePdf::new(light_ptr.clone(), srec.pdf_ptr.clone());
+    let scattered = Ray::new(rec.p, p.generate(), r.tm);
+    let pdf_val = p.value(scattered.dir);
+    emitted + Vec3::elemul(srec.attenuation, ray_color(&scattered, background, world, lights, depth - 1)) * rec.mat_ptr.scattering_pdf(*r, rec.clone(), scattered) / pdf_val
 }
 
 fn main() {
@@ -288,7 +279,10 @@ fn main() {
     let samples_per_pixel: i32 = 1000;
     //world
     let world = cornell_box();
-    let lights:Rc<dyn Hittable> = Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0)))));
+    let mut lights = HittableList::new();
+    lights.add(Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
+    lights.add(Rc::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0,Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
+
 
     //Camera
     let lookfrom: Vec3 = Vec3::new(278.0, 278.0, -800.0);
