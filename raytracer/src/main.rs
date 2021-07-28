@@ -133,7 +133,7 @@ fn cornell_box() -> HittableList {
     objects.add(Rc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     objects.add(Rc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     let aluminum = Rc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
-    let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), aluminum.clone()));
+    let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone()));
     box1 = Rc::new(Rotatey::new(box1, 15.0));
     box1 = Rc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
     objects.add(box1);
@@ -280,7 +280,7 @@ fn main() {
     //world
     let world = cornell_box();
     let mut lights = HittableList::new();
-    lights.add(Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
+    //lights.add(Rc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
     lights.add(Rc::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0,Rc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
 
 
