@@ -103,9 +103,11 @@ pub fn random_in_unit_disk() -> Vec3 {
 }
 pub fn random_in_hemisphere(normal: Vec3) -> Vec3 {
     let in_unit_sphere = random_in_unit_sphere();
-    if in_unit_sphere * normal > 0.0 
-        {in_unit_sphere}
-    else {-in_unit_sphere}
+    if in_unit_sphere * normal > 0.0 {
+        in_unit_sphere
+    } else {
+        -in_unit_sphere
+    }
 }
 impl Add for Vec3 {
     type Output = Self;

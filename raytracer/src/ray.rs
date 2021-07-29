@@ -4,7 +4,7 @@ use crate::Vec3;
 pub struct Ray {
     pub orig: Vec3,
     pub dir: Vec3,
-    pub tm: f64,//默认是0.0
+    pub tm: f64, //默认是0.0
 }
 
 impl Ray {

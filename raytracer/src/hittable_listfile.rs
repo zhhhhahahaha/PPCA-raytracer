@@ -1,24 +1,26 @@
 use crate::aabb::surrounding_box;
+use crate::rtweekend::random_i32;
 use crate::HitRecord;
 use crate::Hittable;
 use crate::Metal;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
-use crate::rtweekend::random_i32;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::vec::Vec;
+
+
 #[derive(Clone)]
 pub struct HittableList {
-    pub objects: Vec<Rc<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
     pub fn new() -> Self {
-        let objects: Vec<Rc<dyn Hittable>> = Vec::new();
+        let objects: Vec<Arc<dyn Hittable>> = Vec::new();
         Self { objects }
     }
 }
@@ -28,7 +30,7 @@ impl Hittable for HittableList {
         let mut temp_rec = HitRecord {
             p: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
-            mat_ptr: Rc::new(Metal::new(Vec3::new(0.0, 0.0, 0.0), 0.5)),
+            mat_ptr: Arc::new(Metal::new(Vec3::new(0.0, 0.0, 0.0), 0.5)),
             t: 0.0,
             u: 0.0,
             v: 0.0,
@@ -77,3 +79,5 @@ impl Hittable for HittableList {
         self.objects[random_i32(0, int_size - 1) as usize].random(o)
     }
 }
+unsafe impl Sync for HittableList{}
+unsafe impl Send for HittableList{}

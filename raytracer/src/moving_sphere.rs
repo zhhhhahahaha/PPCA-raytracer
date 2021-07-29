@@ -5,7 +5,7 @@ use crate::Hittable;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct MovingSphere {
@@ -14,7 +14,7 @@ pub struct MovingSphere {
     pub time0: f64,
     pub time1: f64,
     pub radius: f64,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
 }
 impl MovingSphere {
     pub fn new(
@@ -23,7 +23,7 @@ impl MovingSphere {
         time0: f64,
         time1: f64,
         radius: f64,
-        m: Rc<dyn Material>,
+        m: Arc<dyn Material>,
     ) -> Self {
         Self {
             center0,

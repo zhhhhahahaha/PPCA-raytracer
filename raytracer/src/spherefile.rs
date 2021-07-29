@@ -1,23 +1,22 @@
 use crate::materialfile::Material;
+use crate::rtweekend::random_f64;
 use crate::HitRecord;
 use crate::Hittable;
+use crate::Lambertian;
+use crate::Onb;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
-use crate::Onb;
-use crate::Lambertian;
-use crate::rtweekend::random_f64;
 use std::f64::consts::PI;
-use std::rc::Rc;
-
+use std::sync::Arc;
 #[derive(Clone)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
 }
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64, m: Rc<dyn Material>) -> Self {
+    pub fn new(center: Vec3, radius: f64, m: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius,
@@ -77,16 +76,17 @@ impl Hittable for Sphere {
         let mut rec = HitRecord {
             p: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
-            mat_ptr: Rc::new(Lambertian::new2(&Vec3::new(0.0, 0.0, 0.0))),
+            mat_ptr: Arc::new(Lambertian::new2(&Vec3::new(0.0, 0.0, 0.0))),
             t: 0.0,
             u: 0.0,
             v: 0.0,
             front_face: false,
         };
-        if !self.hit(Ray::new(o, v, 0.0), &0.001, &f64::INFINITY, &mut rec){
+        if !self.hit(Ray::new(o, v, 0.0), &0.001, &f64::INFINITY, &mut rec) {
             return 0.0;
         }
-        let cos_theta_max = (1.0 - self.radius * self.radius / (self.center - o).squared_length()).sqrt();
+        let cos_theta_max =
+            (1.0 - self.radius * self.radius / (self.center - o).squared_length()).sqrt();
         let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
         1.0 / solid_angle
     }
@@ -97,7 +97,7 @@ impl Hittable for Sphere {
         uvw.localbyvector(random_to_sphere(self.radius, distance_squared))
     }
 }
-pub fn random_to_sphere(radius:f64, distance_squared:f64) -> Vec3 {
+pub fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
     let r1 = random_f64(0.0, 1.0);
     let r2 = random_f64(0.0, 1.0);
     let z = 1.0 + r2 * ((1.0 - radius * radius / distance_squared).sqrt() - 1.0);
