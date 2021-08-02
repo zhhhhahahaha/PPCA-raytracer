@@ -34,15 +34,15 @@ use texture::{SolidColor, Texture,NoiseTexture};
 use vec3::Vec3;
 use perlin::Perlin;
 use aarect::{XYRect,XZRect, YZRect};
-use boxfile::Box;
+use boxfile::RealBox;
 use constant_medium::ConstantMedium;
-use bvh::BvhNode;
 use onb::Onb;
 use pdf::{Pdf,CosinePdf,HittablePdf,MixturePdf};
 use crate::rtweekend::random_f64;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
+use std::boxed::Box;
 
 /* 
 fn final_scene() -> HittableList {
@@ -121,30 +121,6 @@ fn cornell_smoke() -> HittableList {
     objects
 }
 */
-fn cornell_box() -> HittableList {
-    let mut objects = HittableList::new();
-    let red = Arc::new(Lambertian::new2(&Vec3::new(0.65, 0.05, 0.05)));
-    let white = Arc::new(Lambertian::new2(&Vec3::new(0.73, 0.73, 0.73)));
-    let green = Arc::new(Lambertian::new2(&Vec3::new(0.12, 0.45, 0.15)));
-    let light = Arc::new(DiffuseLight::new2(Vec3::new(15.0, 15.0, 15.0)));
-    
-    objects.add(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
-    objects.add(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-    objects.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light)))));
-    objects.add(Arc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
-    objects.add(Arc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
-    objects.add(Arc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
-    let aluminum = Arc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
-    let mut box1: Arc<dyn Hittable> = Arc::new(Box::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone()));
-    box1 = Arc::new(Rotatey::new(box1, 15.0));
-    box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
-    objects.add(box1);
-
-    let glass = Arc::new(Dielectric::new(1.5));
-    objects.add(Arc::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0, glass.clone())));
-
-    objects
-}
 /* 
 fn simple_light () -> HittableList {
     let mut objects = HittableList::new();
@@ -232,40 +208,56 @@ fn random_scene() -> HittableList {
     world
 }
 */
+fn cornell_box() -> HittableList {
+    let mut objects = HittableList::new();
+    let red = Lambertian::new2(Vec3::new(0.65, 0.05, 0.05));
+    let white = Lambertian::new2(Vec3::new(0.73, 0.73, 0.73));
+    let green = Lambertian::new2(Vec3::new(0.12, 0.45, 0.15));
+    let light = DiffuseLight::new2(Vec3::new(15.0, 15.0, 15.0));
+    
+    objects.add(Box::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+    objects.add(Box::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.add(Box::new(FlipFace::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light))));
+    objects.add(Box::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
+    objects.add(Box::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+    objects.add(Box::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+    let mut box1 = RealBox::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone());
+    let box1 = Rotatey::new(box1, 15.0);
+    let box1 = Translate::new(box1, Vec3::new(265.0, 0.0, 295.0));
+    let box1 = Box::new(box1);
+    objects.add(box1);
 
-fn ray_color(r: &Ray,background: Vec3, world: &Arc<HittableList>,lights: & HittableList, depth: i32) -> Vec3 {
-    let mut rec = HitRecord {
-        p: Vec3::new(0.0, 0.0, 0.0),
-        normal: Vec3::new(0.0, 0.0, 0.0),
-        mat_ptr: Arc::new(Lambertian::new2(&Vec3::new(0.0, 0.0, 0.0))),
-        t: 0.0,
-        u: 0.0,
-        v: 0.0,
-        front_face: false,
-    };
+    let glass = Dielectric::new(1.5);
+    objects.add(Box::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0, glass.clone())));
+
+    objects
+}
+fn ray_color(r: Ray,background: Vec3, world: &Arc<HittableList>,lights: &Arc<HittableList>, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
-    if !world.hit(*r, &0.001, &INFINITY, &mut rec) {
+    if let None = world.hit(r, 0.001, INFINITY) {
         return background;
     }
+    let mut rec = world.hit(r, 0.001, INFINITY).unwrap();
     let mut srec = ScatterRecord {specular_ray:Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
                                            is_specular:false,
                                            attenuation: Vec3::zero(),
-                                           pdf_ptr: Arc::new(CosinePdf::new(Vec3::zero())),};
-    let emitted = rec.mat_ptr.emitted(*r, &rec, rec.u, rec.v, rec.p);
-    if !rec.mat_ptr.scatter(&r, &rec, &mut srec) {
+                                           pdf_ptr: Box::new(CosinePdf::new(Vec3::zero())),};
+    let emitted = rec.mat_ptr.emitted(r, &rec, rec.u, rec.v, rec.p);
+    if !rec.mat_ptr.scatter(r, &rec, &mut srec) {
         return emitted;
     }
     if srec.is_specular {
-        return Vec3::elemul(srec.attenuation, ray_color(&srec.specular_ray, background, world, lights, depth - 1));
+        return Vec3::elemul(srec.attenuation, ray_color(srec.specular_ray, background, world, lights, depth - 1));
     }
-    let lights_ptr:Arc<HittableList> = Arc::new(lights.clone());
-    let light_ptr = Arc::new(HittablePdf::new(lights_ptr, rec.p));
-    let p = MixturePdf::new(light_ptr.clone(), srec.pdf_ptr.clone());
+    let tem1pdf = &**lights;
+    let light_ptr = HittablePdf::new(tem1pdf, rec.p);
+    let tem2pdf = &*srec.pdf_ptr;
+    let p = MixturePdf::new(&light_ptr, tem2pdf);
     let scattered = Ray::new(rec.p, p.generate(), r.tm);
     let pdf_val = p.value(scattered.dir);
-    emitted + Vec3::elemul(srec.attenuation, ray_color(&scattered, background, world, lights, depth - 1)) * rec.mat_ptr.scattering_pdf(*r, rec.clone(), scattered) / pdf_val
+    emitted + Vec3::elemul(srec.attenuation, ray_color(scattered, background, world, lights, depth - 1)) * rec.mat_ptr.scattering_pdf(r, &rec, scattered) / pdf_val
 }
 
 fn main() {
@@ -282,11 +274,11 @@ fn main() {
     const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
     let samples_per_pixel: i32 = 1000;
     //world
+    let mut lights =HittableList::new();
+    lights.add(Box::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0)))));
+    lights.add(Box::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0,DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0)))));
     let world = Arc::new(cornell_box());
-    let mut lights = HittableList::new();
-    lights.add(Arc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Arc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
-    lights.add(Arc::new(Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0,Arc::new(DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0))))));
-
+    let lights = Arc::new(lights);
 
     //Camera
     let lookfrom: Vec3 = Vec3::new(278.0, 278.0, -800.0);
@@ -326,7 +318,7 @@ fn main() {
                     let u: f64 = (x1 + random_f64(0.0, 1.0)) / (IMAGE_WIDTH as f64 - 1.0);
                     let v: f64 = (y1 + random_f64(0.0, 1.0)) / (IMAGE_HEIGHT as f64 - 1.0);
                     let r: Ray = cam.get_ray(&u, &v);
-                    color += ray_color(&r, background, &world_ptr,&lightscolne , 50);
+                    color += ray_color(r, background, &world_ptr,&lightscolne , 50);
                 }
                 let r = color.x;
                 let g = color.y;

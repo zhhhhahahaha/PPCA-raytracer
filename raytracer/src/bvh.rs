@@ -1,4 +1,4 @@
-use crate::aabb::surrounding_box;
+/*use crate::aabb::surrounding_box;
 use crate::rtweekend::random_i32;
 use crate::HitRecord;
 use crate::Hittable;
@@ -6,24 +6,24 @@ use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
 use std::cmp::Ordering;
-use std::sync::Arc;
+use std::boxed::Box;
 use std::vec::Vec;
 
 #[derive(Clone)]
 pub struct BvhNode {
-    pub left: Arc<dyn Hittable>,
-    pub right: Arc<dyn Hittable>,
+    pub left: Box<dyn Hittable>,
+    pub right: Box<dyn Hittable>,
     pub boxb: AABB,
 }
 impl BvhNode {
     pub fn new(
-        src_objects: &Vec<Arc<dyn Hittable>>,
+        src_objects: &Vec<Box<dyn Hittable>>,
         start: usize,
         end: usize,
         time0: f64,
         time1: f64,
     ) -> Self {
-        let mut objects: Vec<Arc<dyn Hittable>> = src_objects.clone();
+        let mut objects: Vec<Box<dyn Hittable>> = src_objects.clone();
         let axis: i32 = random_i32(0, 2);
         let comparator = if axis == 0 {
             box_x_compare
@@ -34,8 +34,8 @@ impl BvhNode {
         };
 
         let object_span = end - start;
-        let mut left: Arc<dyn Hittable> = objects[0].clone();
-        let mut right: Arc<dyn Hittable> = objects[0].clone();
+        let mut left: Box<dyn Hittable> = objects[0].clone();
+        let mut right: Box<dyn Hittable> = objects[0].clone();
         if object_span == 1 {
             left = objects[start].clone();
             right = objects[start].clone();
@@ -48,7 +48,7 @@ impl BvhNode {
                 right = objects[start].clone();
             }
         } else {
-            let mut change: Vec<Arc<dyn Hittable>> = Vec::new();
+            let mut change: Vec<Box<dyn Hittable>> = Vec::new();
             for i in start..end {
                 change.push(objects[i].clone());
             }
@@ -57,8 +57,8 @@ impl BvhNode {
                 objects[i] = change[i - start].clone();
             }
             let mid = start + object_span / 2;
-            left = Arc::new(BvhNode::new(&objects.clone(), start, mid, time0, time1));
-            right = Arc::new(BvhNode::new(&objects.clone(), mid, end, time0, time1));
+            left = Box::new(BvhNode::new(&objects.clone(), start, mid, time0, time1));
+            right = Box::new(BvhNode::new(&objects.clone(), mid, end, time0, time1));
         }
         let mut box_left = AABB::new(Vec3::zero(), Vec3::zero());
         let mut box_right = AABB::new(Vec3::zero(), Vec3::zero());
@@ -77,8 +77,8 @@ impl Hittable for BvhNode {
         *output_box = self.boxb;
         true
     }
-    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool {
-        if !self.boxb.hit(r, *t_min, *t_max) {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        /*if !self.boxb.hit(r, *t_min, *t_max) {
             return false;
         }
         let hit_left = self.left.hit(r, t_min, t_max, rec);
@@ -86,10 +86,11 @@ impl Hittable for BvhNode {
         let hit_right = self
             .right
             .hit(r, t_min, if hit_left { &t } else { t_max }, rec);
-        hit_left || hit_right
+        hit_left || hit_right*/
+        None
     }
 }
-pub fn box_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>, axis: i32) -> Ordering {
+pub fn box_compare(a: Box<dyn Hittable>, b: Box<dyn Hittable>, axis: i32) -> Ordering {
     let mut box_a: AABB = AABB::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
     let mut box_b: AABB = AABB::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
     if !a.bounding_box(0.0, 0.0, &mut box_a) || !b.bounding_box(0.0, 0.0, &mut box_b) {
@@ -104,12 +105,13 @@ pub fn box_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>, axis: i32) -> Ord
         return Ordering::Greater;
     }
 }
-pub fn box_x_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> Ordering {
+pub fn box_x_compare(a: Box<dyn Hittable>, b: Box<dyn Hittable>) -> Ordering {
     box_compare(a, b, 0)
 }
-pub fn box_y_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> Ordering {
+pub fn box_y_compare(a: Box<dyn Hittable>, b: Box<dyn Hittable>) -> Ordering {
     box_compare(a, b, 1)
 }
-pub fn box_z_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> Ordering {
+pub fn box_z_compare(a: Box<dyn Hittable>, b: Box<dyn Hittable>) -> Ordering {
     box_compare(a, b, 2)
 }
+*/

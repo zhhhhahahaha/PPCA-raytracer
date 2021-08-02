@@ -8,62 +8,74 @@ use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
 use std::f64::consts::PI;
-use std::sync::Arc;
 #[derive(Clone)]
-pub struct Sphere {
+pub struct Sphere<T:Material> {
     pub center: Vec3,
     pub radius: f64,
-    pub mat_ptr: Arc<dyn Material>,
+    pub mat_ptr: T,
 }
-impl Sphere {
-    pub fn new(center: Vec3, radius: f64, m: Arc<dyn Material>) -> Self {
+impl<T:Material> Sphere<T> {
+    pub fn new(center: Vec3, radius: f64, m: T) -> Self {
         Self {
             center,
             radius,
             mat_ptr: m,
         }
     }
-    fn get_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
-        let theta: f64 = (-p.y).acos();
-        let phi: f64 = f64::atan2(-p.z, p.x) + PI;
-        *u = phi / (2.0 * PI);
-        *v = theta / PI;
-    }
+}
+fn get_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
+    let theta: f64 = (-p.y).acos();
+    let phi: f64 = f64::atan2(-p.z, p.x) + PI;
+    *u = phi / (2.0 * PI);
+    *v = theta / PI;
 }
 
-impl Hittable for Sphere {
-    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool {
+impl<T:Material> Hittable for Sphere<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vec3 = r.orig - self.center;
         let a: f64 = r.dir * r.dir;
         let half_b: f64 = r.dir * oc;
         let c: f64 = oc * oc - self.radius * self.radius;
         let discriminant: f64 = f64::powf(half_b, 2.0) - a * c;
         if discriminant < 0.0 {
-            return false;
-        } else {
+            return None;
+        } 
+        else {
             let root: f64 = discriminant.sqrt();
             let t: f64 = (-half_b - root) / a;
-            if t > *t_min && t < *t_max {
-                rec.t = t;
-                rec.p = r.at(t);
+            if t > t_min && t < t_max {
+                let mut rec = HitRecord{
+                    t,
+                    p:r.at(t),
+                    mat_ptr:&self.mat_ptr,
+                    front_face: true,
+                    u: 0.0,
+                    v: 0.0,
+                    normal:Vec3::zero()     
+                };
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
-                Sphere::get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
-                rec.mat_ptr = self.mat_ptr.clone();
-                return true;
+                get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
+                return Some(rec);
             }
             let t: f64 = (-half_b + root) / a;
-            if t > *t_min && t < *t_max {
-                rec.t = t;
-                rec.p = r.at(t);
+            if t > t_min && t < t_max {
+                let mut rec = HitRecord{
+                    t,
+                    p:r.at(t),
+                    mat_ptr:&self.mat_ptr,
+                    front_face: true,
+                    u: 0.0,
+                    v: 0.0,
+                    normal:Vec3::zero()     
+                };
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
-                Sphere::get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
-                rec.mat_ptr = self.mat_ptr.clone();
-                return true;
+                get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
+                return Some(rec);
             }
         }
-        false
+        None
     }
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(
@@ -76,13 +88,13 @@ impl Hittable for Sphere {
         let mut rec = HitRecord {
             p: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
-            mat_ptr: Arc::new(Lambertian::new2(&Vec3::new(0.0, 0.0, 0.0))),
+            mat_ptr: &Lambertian::new2(Vec3::new(0.0, 0.0, 0.0)),
             t: 0.0,
             u: 0.0,
             v: 0.0,
             front_face: false,
         };
-        if !self.hit(Ray::new(o, v, 0.0), &0.001, &f64::INFINITY, &mut rec) {
+        if let None = self.hit(Ray::new(o, v, 0.0), 0.001, f64::INFINITY) {
             return 0.0;
         }
         let cos_theta_max =

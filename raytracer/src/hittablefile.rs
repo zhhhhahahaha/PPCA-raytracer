@@ -3,20 +3,19 @@ use crate::rtweekend::{degrees_to_radians, fmax, fmin};
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
-use std::sync::Arc;
 
 #[derive(Clone)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Vec3,
     pub normal: Vec3,
-    pub mat_ptr: Arc<dyn Material>,
+    pub mat_ptr: &'a dyn Material,
     pub t: f64,
-    pub u: f64,
-    pub v: f64,
+    pub u: f64,//u和v应该是不用的时候默认是0
+    pub v: f64,//
     pub front_face: bool,
 }
 
-impl HitRecord {
+impl<'a> HitRecord<'a> {
     pub fn set_face_normal(&mut self, r: Ray, outward_normal: Vec3) {
         self.front_face = r.dir * outward_normal < 0.0;
         self.normal = if self.front_face {
@@ -27,7 +26,7 @@ impl HitRecord {
     }
 }
 pub trait Hittable {
-    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool;
     fn pdf_value(&self, o: Vec3, v: Vec3) -> f64 {
         0.0
@@ -37,27 +36,28 @@ pub trait Hittable {
     }
 }
 #[derive(Clone)]
-pub struct Translate {
-    ptr: Arc<dyn Hittable>,
+pub struct Translate<T:Hittable> {
+    ptr: T,
     offset: Vec3,
 }
-impl Translate {
-    pub fn new(p: Arc<dyn Hittable>, displacement: Vec3) -> Self {
+impl<T:Hittable> Translate<T> {
+    pub fn new(p: T, displacement: Vec3) -> Self {
         Self {
             ptr: p,
             offset: displacement,
         }
     }
 }
-impl Hittable for Translate {
-    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool {
+impl<T:Hittable> Hittable for Translate<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let move_r: Ray = Ray::new(r.orig - self.offset, r.dir, r.tm);
-        if !self.ptr.hit(move_r, t_min, t_max, rec) {
-            return false;
+        if let None = self.ptr.hit(move_r, t_min, t_max) {
+            return None;
         }
+        let mut rec = self.ptr.hit(move_r, t_min, t_max).unwrap();
         rec.p += self.offset;
         rec.set_face_normal(move_r, rec.normal);
-        true
+        Some(rec)
     }
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         if !self.ptr.bounding_box(time0, time1, output_box) {
@@ -71,15 +71,15 @@ impl Hittable for Translate {
     }
 }
 #[derive(Clone)]
-pub struct Rotatey {
-    ptr: Arc<dyn Hittable>,
+pub struct Rotatey<T:Hittable> {
+    ptr: T,
     sin_theta: f64,
     cos_theta: f64,
     hasbox: bool,
     bbox: AABB,
 }
-impl Rotatey {
-    pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
+impl<T:Hittable> Rotatey<T> {
+    pub fn new(p: T, angle: f64) -> Self {
         let radians: f64 = degrees_to_radians(angle);
         let sin_theta = f64::sin(radians);
         let cos_theta = f64::cos(radians);
@@ -127,12 +127,12 @@ impl Rotatey {
         }
     }
 }
-impl Hittable for Rotatey {
+impl<T:Hittable> Hittable for Rotatey<T> {
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         *output_box = self.bbox;
         self.hasbox
     }
-    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut origin = r.orig;
         let mut direction = r.dir;
         origin.x = self.cos_theta * r.orig.x - self.sin_theta * r.orig.z;
@@ -140,9 +140,10 @@ impl Hittable for Rotatey {
         direction.x = self.cos_theta * r.dir.x - self.sin_theta * r.dir.z;
         direction.z = self.sin_theta * r.dir.x + self.cos_theta * r.dir.z;
         let rotated_r = Ray::new(origin, direction, r.tm);
-        if !self.ptr.hit(rotated_r, &t_min, &t_max, rec) {
-            return false;
+        if let None = self.ptr.hit(rotated_r, t_min, t_max) {
+            return None;
         }
+        let mut rec = self.ptr.hit(rotated_r, t_min, t_max).unwrap(); 
         let mut p = rec.p;
         let mut normal = rec.normal;
         p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.z;
@@ -151,26 +152,27 @@ impl Hittable for Rotatey {
         normal.z = -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.z;
         rec.p = p;
         rec.set_face_normal(rotated_r, normal);
-        true
+        Some(rec)
     }
 }
 
 #[derive(Clone)]
-pub struct FlipFace {
-    pub ptr: Arc<dyn Hittable>,
+pub struct FlipFace<T:Hittable> {
+    pub ptr: T,
 }
-impl FlipFace {
-    pub fn new(p: Arc<dyn Hittable>) -> Self {
+impl<T:Hittable> FlipFace<T> {
+    pub fn new(p: T) -> Self {
         Self { ptr: p }
     }
 }
-impl Hittable for FlipFace {
-    fn hit(&self, r: Ray, t_min: &f64, t_max: &f64, rec: &mut HitRecord) -> bool {
-        if !self.ptr.hit(r, t_min, t_max, rec) {
-            return false;
+impl<T:Hittable> Hittable for FlipFace<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        if let None = self.ptr.hit(r, t_min, t_max) {
+            return None;
         }
+        let mut rec = self.ptr.hit(r, t_min, t_max).unwrap();
         rec.front_face = !rec.front_face;
-        true
+        Some(rec)
     }
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         self.ptr.bounding_box(time0, time1, output_box)

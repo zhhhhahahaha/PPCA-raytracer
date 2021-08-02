@@ -4,8 +4,7 @@ use crate::Vec3;
 use image;
 use imageproc::drawing::Canvas;
 use std::vec::Vec;
-use std::{str};
-use std::sync::Arc;
+use std::str;
 
 pub trait Texture {
     fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3;
@@ -29,23 +28,25 @@ impl Texture for SolidColor {
         self.color_value
     }
 }
-#[derive(Clone)]
-pub struct CheckerTexture {
-    odd: Arc<dyn Texture>,
-    even: Arc<dyn Texture>,
+#[derive(Clone, Debug, PartialEq, Copy)]
+pub struct CheckerTexture<T: Texture, U:Texture> {
+    odd: T,
+    even: U,
 }
-impl CheckerTexture {
-    pub fn new1(odd: Arc<dyn Texture>, even: Arc<dyn Texture>) -> Self {
+impl<T: Texture, U: Texture> CheckerTexture<T,U> {
+    pub fn new1(odd: T, even: U) -> Self {
         Self { odd, even }
     }
+}
+impl CheckerTexture<SolidColor, SolidColor>{
     pub fn new2(c1: Vec3, c2: Vec3) -> Self {
         Self {
-            even: Arc::new(SolidColor::new1(c1)),
-            odd: Arc::new(SolidColor::new1(c2)),
+            even: SolidColor::new1(c1),
+            odd:  SolidColor::new1(c2),
         }
     }
 }
-impl Texture for CheckerTexture {
+impl<T: Texture,U: Texture> Texture for CheckerTexture<T, U>{
     fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         let sines: f64 = f64::sin(10.0 * p.x) * f64::sin(10.0 * p.y) * f64::sin(10.0 * p.z);
         if sines < 0.0 {

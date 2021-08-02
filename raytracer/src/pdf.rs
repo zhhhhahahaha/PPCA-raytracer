@@ -4,7 +4,6 @@ use crate::Hittable;
 use crate::Onb;
 use crate::Vec3;
 use std::f64::consts::PI;
-use std::sync::Arc;
 
 pub trait Pdf {
     fn value(&self, direction: Vec3) -> f64;
@@ -22,7 +21,7 @@ impl CosinePdf {
 impl Pdf for CosinePdf {
     fn value(&self, direction: Vec3) -> f64 {
         let cosine = direction.unit() * self.uvw.axis[2];
-        if (cosine < 0.0) {
+        if cosine < 0.0 {
             0.0
         } else {
             cosine / PI
@@ -32,16 +31,17 @@ impl Pdf for CosinePdf {
         self.uvw.localbyvector(random_cosine_direction())
     }
 }
-pub struct HittablePdf {
+#[derive(Clone)]
+pub struct HittablePdf<'a,T:Hittable> {
     pub o: Vec3,
-    pub ptr: Arc<dyn Hittable>,
+    pub ptr: &'a T,
 }
-impl HittablePdf {
-    pub fn new(p: Arc<dyn Hittable>, origin: Vec3) -> Self {
+impl<'a, T:Hittable> HittablePdf<'a,T> {
+    pub fn new(p:&'a T, origin: Vec3) -> Self {
         Self { ptr: p, o: origin }
     }
 }
-impl Pdf for HittablePdf {
+impl<'a, T:Hittable> Pdf for HittablePdf<'a, T> {
     fn value(&self, direction: Vec3) -> f64 {
         self.ptr.pdf_value(self.o, direction)
     }
@@ -50,24 +50,24 @@ impl Pdf for HittablePdf {
     }
 }
 #[derive(Clone)]
-pub struct MixturePdf {
-    pub p: [Arc<dyn Pdf>; 2],
+pub struct MixturePdf<'a> {
+    pub p0:&'a dyn Pdf,
+    pub p1:&'a dyn Pdf,
 }
-impl MixturePdf {
-    pub fn new(p0: Arc<dyn Pdf>, p1: Arc<dyn Pdf>) -> Self {
-        let p: [Arc<dyn Pdf>; 2] = [p0, p1];
-        Self { p }
+impl<'a> MixturePdf<'a> {
+    pub fn new(p0: &'a dyn Pdf, p1: &'a dyn Pdf) -> Self {
+        Self { p0:p0, p1:p1 }
     }
 }
-impl Pdf for MixturePdf {
+impl<'a> Pdf for MixturePdf<'a> {
     fn value(&self, direction: Vec3) -> f64 {
-        0.5 * self.p[0].value(direction) + 0.5 * self.p[1].value(direction)
+        0.5 * self.p0.value(direction) + 0.5 * self.p1.value(direction)
     }
     fn generate(&self) -> Vec3 {
         if random_f64(0.0, 1.0) < 0.5 {
-            return self.p[0].generate();
+            return self.p0.generate();
         } else {
-            self.p[1].generate()
+            self.p1.generate()
         }
     }
 }

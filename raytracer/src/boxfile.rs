@@ -1,29 +1,24 @@
 use crate::Hittable;
 use crate::HittableList;
+use crate::HitRecord;
 use crate::Material;
 use crate::Vec3;
 use crate::AABB;
+use crate::Ray;
 use crate::{XYRect, XZRect, YZRect};
-use std::sync::Arc;
+use std::boxed::Box;
 
-#[derive(Clone)]
-pub struct Box {
+
+pub struct RealBox {
     box_min: Vec3,
     box_max: Vec3,
-    sides: HittableList,
+    pub sides: HittableList,
 }
-impl Box {
-    pub fn new(p0: Vec3, p1: Vec3, ptr: Arc<dyn Material>) -> Self {
+impl<'a> RealBox{
+    pub fn new<T: 'static+Material+Clone>(p0: Vec3, p1: Vec3, ptr: T) -> Self {
         let mut sides = HittableList::new();
-        sides.add(Arc::new(XYRect::new(
-            p0.x,
-            p1.x,
-            p0.y,
-            p1.y,
-            p1.z,
-            ptr.clone(),
-        )));
-        sides.add(Arc::new(XYRect::new(
+        sides.add(Box::new(XYRect::new(p0.x,p1.x,p0.y,p1.y,p1.z,ptr.clone())));
+        sides.add(Box::new(XYRect::new(
             p0.x,
             p1.x,
             p0.y,
@@ -32,7 +27,7 @@ impl Box {
             ptr.clone(),
         )));
 
-        sides.add(Arc::new(XZRect::new(
+        sides.add(Box::new(XZRect::new(
             p0.x,
             p1.x,
             p0.z,
@@ -40,7 +35,7 @@ impl Box {
             p1.y,
             ptr.clone(),
         )));
-        sides.add(Arc::new(XZRect::new(
+        sides.add(Box::new(XZRect::new(
             p0.x,
             p1.x,
             p0.z,
@@ -49,7 +44,7 @@ impl Box {
             ptr.clone(),
         )));
 
-        sides.add(Arc::new(YZRect::new(
+        sides.add(Box::new(YZRect::new(
             p0.y,
             p1.y,
             p0.z,
@@ -57,7 +52,7 @@ impl Box {
             p1.x,
             ptr.clone(),
         )));
-        sides.add(Arc::new(YZRect::new(
+        sides.add(Box::new(YZRect::new(
             p0.y,
             p1.y,
             p0.z,
@@ -72,15 +67,18 @@ impl Box {
         }
     }
 }
-impl Hittable for Box {
+impl Hittable for RealBox {
     fn hit(
         &self,
-        r: crate::ray::Ray,
-        t_min: &f64,
-        t_max: &f64,
-        rec: &mut crate::hittablefile::HitRecord,
-    ) -> bool {
-        self.sides.hit(r, &t_min, &t_max, rec)
+        r: Ray,
+        t_min: f64,
+        t_max: f64,
+    ) -> Option<HitRecord> {
+        if let None = self.sides.hit(r, t_min, t_max){
+            return None;
+        }
+        let mut rec = self.sides.hit(r, t_min, t_max).unwrap();
+        Some(rec)
     }
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut crate::aabb::AABB) -> bool {
         *output_box = AABB::new(self.box_min, self.box_max);
