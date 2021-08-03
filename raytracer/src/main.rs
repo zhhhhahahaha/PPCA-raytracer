@@ -319,12 +319,6 @@ fn main() {
                     let r: Ray = cam.get_ray(&u, &v);
                     color += ray_color(r, background, &world_ptr,&lightscolne , 50);
                 }
-                let r = color.x;
-                let g = color.y;
-                let b = color.z;
-                if r!=r {color.x = 0.0}
-                if g!=g {color.y = 0.0}
-                if b!=b {color.z = 0.0}
                 let red = (255.999 * ((color.x / samples_per_pixel as f64).sqrt())) as u8;
                 let green = (255.999 * ((color.y / samples_per_pixel as f64).sqrt())) as u8;
                 let blue = (255.999 * ((color.z / samples_per_pixel as f64).sqrt())) as u8;

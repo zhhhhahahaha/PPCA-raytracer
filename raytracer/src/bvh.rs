@@ -100,9 +100,7 @@ pub fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis: i32) -> O
     if box_a.minimum.getcoordinate(axis) < box_b.minimum.getcoordinate(axis) {
         return Ordering::Less;
     }
-    if box_a.minimum.getcoordinate(axis) == box_b.minimum.getcoordinate(axis) {
-        return Ordering::Equal;
-    } else {
+    else {
         return Ordering::Greater;
     }
 }
