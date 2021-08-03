@@ -1,9 +1,7 @@
-use crate::random_f64;
 use crate::rtweekend::random_i32;
 use crate::Vec3;
 use std::usize;
 use std::vec::Vec;
-
 pub const POINT_COUNT: usize = 256;
 #[derive(Clone)]
 pub struct Perlin {

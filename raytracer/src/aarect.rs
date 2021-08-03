@@ -7,7 +7,7 @@ use crate::Vec3;
 use crate::AABB;
 
 #[derive(Clone)]
-pub struct XYRect<T:Material> {
+pub struct XYRect<T: Material> {
     pub mp: T,
     pub x0: f64,
     pub x1: f64,
@@ -15,7 +15,7 @@ pub struct XYRect<T:Material> {
     pub y1: f64,
     pub k: f64,
 }
-impl<T:Material> XYRect<T> {
+impl<T: Material> XYRect<T> {
     pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mp: T) -> Self {
         Self {
             x0,
@@ -28,7 +28,7 @@ impl<T:Material> XYRect<T> {
     }
 }
 
-impl<T:Material> Hittable for XYRect<T> {
+impl<T: Material> Hittable for XYRect<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let t: f64 = (self.k - r.orig.z) / r.dir.z;
         if t < t_min || t > t_max {
@@ -39,7 +39,7 @@ impl<T:Material> Hittable for XYRect<T> {
         if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
             return None;
         }
-        let mut rec = HitRecord{
+        let mut rec = HitRecord {
             u: (x - self.x0) / (self.x1 - self.x0),
             v: (y - self.y0) / (self.y1 - self.y0),
             t,
@@ -48,9 +48,8 @@ impl<T:Material> Hittable for XYRect<T> {
             p: r.at(t),
             front_face: true,
         };
-        rec.set_face_normal(r, Vec3::new(0.0,0.0,1.0));
+        rec.set_face_normal(r, Vec3::new(0.0, 0.0, 1.0));
         Some(rec)
-        
     }
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(
@@ -62,7 +61,7 @@ impl<T:Material> Hittable for XYRect<T> {
 }
 
 #[derive(Clone)]
-pub struct XZRect<T:Material> {
+pub struct XZRect<T: Material> {
     pub mp: T,
     pub x0: f64,
     pub x1: f64,
@@ -70,7 +69,7 @@ pub struct XZRect<T:Material> {
     pub z1: f64,
     pub k: f64,
 }
-impl<T:Material> XZRect<T> {
+impl<T: Material> XZRect<T> {
     pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mat: T) -> Self {
         Self {
             x0,
@@ -82,7 +81,7 @@ impl<T:Material> XZRect<T> {
         }
     }
 }
-impl<T:Material> Hittable for XZRect<T> {
+impl<T: Material> Hittable for XZRect<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let t: f64 = (self.k - r.orig.y) / r.dir.y;
         if t < t_min || t > t_max {
@@ -93,14 +92,14 @@ impl<T:Material> Hittable for XZRect<T> {
         if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
             return None;
         }
-        let mut rec = HitRecord{
-            u:(x - self.x0) / (self.x1 - self.x0),
-            v:(z - self.z0) / (self.z1 - self.z0),
+        let mut rec = HitRecord {
+            u: (x - self.x0) / (self.x1 - self.x0),
+            v: (z - self.z0) / (self.z1 - self.z0),
             t,
-            mat_ptr:&self.mp,
-            p:r.at(t),
-            front_face:true,
-            normal:Vec3::zero(),
+            mat_ptr: &self.mp,
+            p: r.at(t),
+            front_face: true,
+            normal: Vec3::zero(),
         };
         rec.set_face_normal(r, Vec3::new(0.0, 1.0, 0.0));
         Some(rec)
@@ -116,7 +115,7 @@ impl<T:Material> Hittable for XZRect<T> {
         if let None = self.hit(Ray::new(o, v, 0.0), 0.001, f64::INFINITY) {
             return 0.0;
         }
-        let rec =  self.hit(Ray::new(o, v, 0.0), 0.001, f64::INFINITY).unwrap();
+        let rec = self.hit(Ray::new(o, v, 0.0), 0.001, f64::INFINITY).unwrap();
         let area = (self.x1 - self.x0) * (self.z1 - self.z0);
         let distance_squared = rec.t * rec.t * v.squared_length();
         let cosine = (v * rec.normal / v.length()).abs();
@@ -141,7 +140,7 @@ pub struct YZRect<T> {
     pub z1: f64,
     pub k: f64,
 }
-impl<T:Material> YZRect<T> {
+impl<T: Material> YZRect<T> {
     pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mat: T) -> Self {
         Self {
             y0,
@@ -153,7 +152,7 @@ impl<T:Material> YZRect<T> {
         }
     }
 }
-impl<T:Material> Hittable for YZRect<T> {
+impl<T: Material> Hittable for YZRect<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let t: f64 = (self.k - r.orig.x) / r.dir.x;
         if t < t_min || t > t_max {
@@ -164,14 +163,14 @@ impl<T:Material> Hittable for YZRect<T> {
         if y < self.y0 || y > self.y1 || z < self.z0 || z > self.z1 {
             return None;
         }
-        let mut rec = HitRecord{
-            u:(y - self.y0) / (self.y1 - self.y0),
-            v:(z - self.z0) / (self.z1 - self.z0),
-            t, 
-            mat_ptr:&self.mp,
-            p:r.at(t),
+        let mut rec = HitRecord {
+            u: (y - self.y0) / (self.y1 - self.y0),
+            v: (z - self.z0) / (self.z1 - self.z0),
+            t,
+            mat_ptr: &self.mp,
+            p: r.at(t),
             normal: Vec3::zero(),
-            front_face: true
+            front_face: true,
         };
         rec.set_face_normal(r, Vec3::new(1.0, 0.0, 0.0));
         Some(rec)

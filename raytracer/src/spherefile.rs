@@ -9,12 +9,12 @@ use crate::Vec3;
 use crate::AABB;
 use std::f64::consts::PI;
 #[derive(Clone)]
-pub struct Sphere<T:Material> {
+pub struct Sphere<T: Material> {
     pub center: Vec3,
     pub radius: f64,
     pub mat_ptr: T,
 }
-impl<T:Material> Sphere<T> {
+impl<T: Material> Sphere<T> {
     pub fn new(center: Vec3, radius: f64, m: T) -> Self {
         Self {
             center,
@@ -30,7 +30,7 @@ fn get_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
     *v = theta / PI;
 }
 
-impl<T:Material> Hittable for Sphere<T> {
+impl<T: Material> Hittable for Sphere<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vec3 = r.orig - self.center;
         let a: f64 = r.dir * r.dir;
@@ -39,19 +39,18 @@ impl<T:Material> Hittable for Sphere<T> {
         let discriminant: f64 = f64::powf(half_b, 2.0) - a * c;
         if discriminant < 0.0 {
             return None;
-        } 
-        else {
+        } else {
             let root: f64 = discriminant.sqrt();
             let t: f64 = (-half_b - root) / a;
             if t > t_min && t < t_max {
-                let mut rec = HitRecord{
+                let mut rec = HitRecord {
                     t,
-                    p:r.at(t),
-                    mat_ptr:&self.mat_ptr,
+                    p: r.at(t),
+                    mat_ptr: &self.mat_ptr,
                     front_face: true,
                     u: 0.0,
                     v: 0.0,
-                    normal:Vec3::zero()     
+                    normal: Vec3::zero(),
                 };
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
@@ -60,14 +59,14 @@ impl<T:Material> Hittable for Sphere<T> {
             }
             let t: f64 = (-half_b + root) / a;
             if t > t_min && t < t_max {
-                let mut rec = HitRecord{
+                let mut rec = HitRecord {
                     t,
-                    p:r.at(t),
-                    mat_ptr:&self.mat_ptr,
+                    p: r.at(t),
+                    mat_ptr: &self.mat_ptr,
                     front_face: true,
                     u: 0.0,
                     v: 0.0,
-                    normal:Vec3::zero()     
+                    normal: Vec3::zero(),
                 };
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(r, outward_normal);
@@ -85,15 +84,6 @@ impl<T:Material> Hittable for Sphere<T> {
         true
     }
     fn pdf_value(&self, o: Vec3, v: Vec3) -> f64 {
-        let mut rec = HitRecord {
-            p: Vec3::new(0.0, 0.0, 0.0),
-            normal: Vec3::new(0.0, 0.0, 0.0),
-            mat_ptr: &Lambertian::new2(Vec3::new(0.0, 0.0, 0.0)),
-            t: 0.0,
-            u: 0.0,
-            v: 0.0,
-            front_face: false,
-        };
         if let None = self.hit(Ray::new(o, v, 0.0), 0.001, f64::INFINITY) {
             return 0.0;
         }

@@ -1,3 +1,4 @@
+#[allow(clippy::float_cmp)]
 mod aabb;
 mod camerafile;
 mod hittable_listfile;
@@ -6,7 +7,6 @@ mod materialfile;
 mod moving_sphere;
 mod ray;
 mod boxfile;
-#[allow(clippy::float_cmp)]
 mod rtweekend;
 mod spherefile;
 mod texture;
@@ -24,18 +24,15 @@ use hittable_listfile::HittableList;
 use hittablefile::{HitRecord,Hittable,Translate, Rotatey, FlipFace};
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
-use materialfile::{Dielectric,Metal,Lambertian, DiffuseLight,Material,Isotropic,ScatterRecord};
-use moving_sphere::MovingSphere;
+use materialfile::{Dielectric,Lambertian, DiffuseLight,Material,Isotropic,ScatterRecord};
 use ray::Ray;
 use rtweekend::INFINITY;
 use spherefile::Sphere;
-use texture::{CheckerTexture, ImageTexture};
-use texture::{SolidColor, Texture,NoiseTexture};
+use texture::{SolidColor, Texture};
 use vec3::Vec3;
 use perlin::Perlin;
 use aarect::{XYRect,XZRect, YZRect};
 use boxfile::RealBox;
-use constant_medium::ConstantMedium;
 use onb::Onb;
 use pdf::{Pdf,CosinePdf,HittablePdf,MixturePdf};
 use crate::rtweekend::random_f64;
@@ -221,7 +218,7 @@ fn cornell_box() -> HittableList {
     objects.add(Box::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
     objects.add(Box::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     objects.add(Box::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
-    let mut box1 = RealBox::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone());
+    let box1 = RealBox::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(165.0, 330.0, 165.0), white.clone());
     let box1 = Rotatey::new(box1, 15.0);
     let box1 = Translate::new(box1, Vec3::new(265.0, 0.0, 295.0));
     let box1 = Box::new(box1);
@@ -239,9 +236,9 @@ fn ray_color(r: Ray,background: Vec3, world: &Arc<HittableList>,lights: &Arc<Hit
     if let None = world.hit(r, 0.001, INFINITY) {
         return background;
     }
-    let mut rec = world.hit(r, 0.001, INFINITY).unwrap();
+    let rec = world.hit(r, 0.001, INFINITY).unwrap();
     let mut srec = ScatterRecord {specular_ray:Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
-                                           is_specular:false,
+                                           is_specular:true,
                                            attenuation: Vec3::zero(),
                                            pdf_ptr: Box::new(CosinePdf::new(Vec3::zero())),};
     let emitted = rec.mat_ptr.emitted(r, &rec, rec.u, rec.v, rec.p);
@@ -249,6 +246,8 @@ fn ray_color(r: Ray,background: Vec3, world: &Arc<HittableList>,lights: &Arc<Hit
         return emitted;
     }
     if srec.is_specular {
+        //let a = ray_color(srec.specular_ray, background, world, lights, depth - 1);
+        //println!("{}, {}, {}", a.x, a.y, a.z);
         return Vec3::elemul(srec.attenuation, ray_color(srec.specular_ray, background, world, lights, depth - 1));
     }
     let tem1pdf = &**lights;
@@ -265,7 +264,7 @@ fn main() {
     let n_jobs: usize = 32;
     let n_workers = 4;
     let pool = ThreadPool::new(n_workers);
-
+    
     let bar = ProgressBar::new(n_jobs as u64);
 
     //image
@@ -298,7 +297,7 @@ fn main() {
         0.0,
         1.0,
     );
-
+    
     for i in 0..n_jobs {
         let tx = tx.clone();
         let world_ptr = world.clone();
@@ -347,7 +346,7 @@ fn main() {
         }
         bar.inc(1);
     }
-    /* for x in 0..IMAGE_WIDTH {
+    /*for x in 0..IMAGE_WIDTH {
         for y in 0..IMAGE_HEIGHT {
             let pixel = img.get_pixel_mut(x as u32, y as u32);
             let x1 = x as f64;
@@ -357,7 +356,7 @@ fn main() {
                 let u: f64 = (x1 + random_f64(0.0, 1.0)) / (IMAGE_WIDTH as f64 - 1.0);
                 let v: f64 = (y1 + random_f64(0.0, 1.0)) / (IMAGE_HEIGHT as f64 - 1.0);
                 let r: Ray = cam.get_ray(&u, &v);
-                color += ray_color(&r, background, &world,&lights , 50);
+                color += ray_color(r, background, &world,&lights , 50);
             }
             let r = color.x;
             let g = color.y;
@@ -365,7 +364,7 @@ fn main() {
             if r!=r {color.x = 0.0}
             if g!=g {color.y = 0.0}
             if b!=b {color.z = 0.0}
-            let samples_per_pixel: f64 = 1000.0;
+            let samples_per_pixel: f64 = 10.0;
             let red = (255.999 * ((color.x / samples_per_pixel).sqrt())) as u8;
             let green = (255.999 * ((color.y / samples_per_pixel).sqrt())) as u8;
             let blue = (255.999 * ((color.z / samples_per_pixel).sqrt())) as u8;
@@ -373,8 +372,7 @@ fn main() {
             *pixel = image::Rgb([red, green, blue]);
         }
         bar.inc(1);
-    }
-    */
+    }*/
     img.save("output/test.png").unwrap();
     bar.finish();
 }

@@ -2,23 +2,19 @@ use crate::rtweekend::random_f64;
 use crate::HitRecord;
 use crate::Hittable;
 use crate::Isotropic;
-use crate::Lambertian;
-use crate::Material;
+use crate::Ray;
 use crate::Texture;
 use crate::Vec3;
 use crate::AABB;
-use crate::Ray;
-use crate::SolidColor;
-use std::sync::Arc;
 
 #[derive(Clone)]
-pub struct ConstantMedium<T:Hittable, U:Material> {
+pub struct ConstantMedium<T: Hittable, U: Texture> {
     boundary: T,
-    phase_function: U,
+    phase_function: Isotropic<U>,
     neg_inv_density: f64,
 }
 /* 
-impl<T:Texture, Isotropic<SolidColor>> ConstantMedium<T, Isotropic<SolidColor>> {
+impl ConstantMedium<SolidColor, T:Hittable> {
     pub fn new2(b: T, d: f64, c: Vec3) -> Self {
         Self {
             boundary: b,
@@ -27,24 +23,29 @@ impl<T:Texture, Isotropic<SolidColor>> ConstantMedium<T, Isotropic<SolidColor>> 
         }
     }
 }
-pub fn new1(b: T, d: f64, a: W) -> Self {
-    Self {
-        boundary: b,
-        neg_inv_density: -1.0 / d,
-        phase_function: Isotropic<W>::new2(a),
+*/
+impl <T:Hittable, U:Texture> ConstantMedium<T,U> {
+    pub fn new1(b: T, d: f64, a: U) -> Self {
+        Self {
+            boundary: b,
+            neg_inv_density: -1.0 / d,
+            phase_function: Isotropic::<U>::new2(a),
+        }
     }
 }
-*/
-impl<T:Hittable, U:Material> Hittable for ConstantMedium<T, U> {
+impl<T: Hittable, U: Texture> Hittable for ConstantMedium<T, U> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        if let None = self.boundary.hit(r, -f64::INFINITY, f64::INFINITY){
+        if let None = self.boundary.hit(r, -f64::INFINITY, f64::INFINITY) {
             return None;
         }
         let mut rec1 = self.boundary.hit(r, -f64::INFINITY, f64::INFINITY).unwrap();
-        if let None = self.boundary.hit(r, rec1.t + 0.0001, f64::INFINITY){
+        if let None = self.boundary.hit(r, rec1.t + 0.0001, f64::INFINITY) {
             return None;
         }
-        let mut rec2 = self.boundary.hit(r, rec1.t + 0.0001,f64::INFINITY).unwrap();
+        let mut rec2 = self
+            .boundary
+            .hit(r, rec1.t + 0.0001, f64::INFINITY)
+            .unwrap();
         //if(debugging) cout<<"t_min"<<rec1.t<<"t_max"<<rec2.t;
         if rec1.t < t_min {
             rec1.t = t_min;
@@ -65,11 +66,11 @@ impl<T:Hittable, U:Material> Hittable for ConstantMedium<T, U> {
             return None;
         }
         let rec = HitRecord {
-            t:rec1.t + hit_distance / ray_length,
-            p:r.at(rec1.t + hit_distance / ray_length),
-            u:0.0,
-            v:0.0,
-            normal:Vec3::new(1.0, 0.0, 0.0),
+            t: rec1.t + hit_distance / ray_length,
+            p: r.at(rec1.t + hit_distance / ray_length),
+            u: 0.0,
+            v: 0.0,
+            normal: Vec3::new(1.0, 0.0, 0.0),
             front_face: true,
             mat_ptr: &self.phase_function,
         };

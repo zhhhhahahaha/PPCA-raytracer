@@ -10,8 +10,8 @@ pub struct HitRecord<'a> {
     pub normal: Vec3,
     pub mat_ptr: &'a dyn Material,
     pub t: f64,
-    pub u: f64,//u和v应该是不用的时候默认是0
-    pub v: f64,//
+    pub u: f64, //u和v应该是不用的时候默认是0
+    pub v: f64, //
     pub front_face: bool,
 }
 
@@ -36,11 +36,11 @@ pub trait Hittable {
     }
 }
 #[derive(Clone)]
-pub struct Translate<T:Hittable> {
+pub struct Translate<T: Hittable> {
     ptr: T,
     offset: Vec3,
 }
-impl<T:Hittable> Translate<T> {
+impl<T: Hittable> Translate<T> {
     pub fn new(p: T, displacement: Vec3) -> Self {
         Self {
             ptr: p,
@@ -48,7 +48,7 @@ impl<T:Hittable> Translate<T> {
         }
     }
 }
-impl<T:Hittable> Hittable for Translate<T> {
+impl<T: Hittable> Hittable for Translate<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let move_r: Ray = Ray::new(r.orig - self.offset, r.dir, r.tm);
         if let None = self.ptr.hit(move_r, t_min, t_max) {
@@ -71,14 +71,14 @@ impl<T:Hittable> Hittable for Translate<T> {
     }
 }
 #[derive(Clone)]
-pub struct Rotatey<T:Hittable> {
+pub struct Rotatey<T: Hittable> {
     ptr: T,
     sin_theta: f64,
     cos_theta: f64,
     hasbox: bool,
     bbox: AABB,
 }
-impl<T:Hittable> Rotatey<T> {
+impl<T: Hittable> Rotatey<T> {
     pub fn new(p: T, angle: f64) -> Self {
         let radians: f64 = degrees_to_radians(angle);
         let sin_theta = f64::sin(radians);
@@ -127,7 +127,7 @@ impl<T:Hittable> Rotatey<T> {
         }
     }
 }
-impl<T:Hittable> Hittable for Rotatey<T> {
+impl<T: Hittable> Hittable for Rotatey<T> {
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         *output_box = self.bbox;
         self.hasbox
@@ -143,7 +143,7 @@ impl<T:Hittable> Hittable for Rotatey<T> {
         if let None = self.ptr.hit(rotated_r, t_min, t_max) {
             return None;
         }
-        let mut rec = self.ptr.hit(rotated_r, t_min, t_max).unwrap(); 
+        let mut rec = self.ptr.hit(rotated_r, t_min, t_max).unwrap();
         let mut p = rec.p;
         let mut normal = rec.normal;
         p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.z;
@@ -157,15 +157,15 @@ impl<T:Hittable> Hittable for Rotatey<T> {
 }
 
 #[derive(Clone)]
-pub struct FlipFace<T:Hittable> {
+pub struct FlipFace<T: Hittable> {
     pub ptr: T,
 }
-impl<T:Hittable> FlipFace<T> {
+impl<T: Hittable> FlipFace<T> {
     pub fn new(p: T) -> Self {
         Self { ptr: p }
     }
 }
-impl<T:Hittable> Hittable for FlipFace<T> {
+impl<T: Hittable> Hittable for FlipFace<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         if let None = self.ptr.hit(r, t_min, t_max) {
             return None;

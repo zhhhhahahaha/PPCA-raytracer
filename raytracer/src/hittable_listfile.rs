@@ -2,12 +2,11 @@ use crate::aabb::surrounding_box;
 use crate::rtweekend::random_i32;
 use crate::HitRecord;
 use crate::Hittable;
-use crate::Metal;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
-use std::vec::Vec;
 use std::boxed::Box;
+use std::vec::Vec;
 
 pub struct HittableList {
     pub objects: Vec<Box<dyn Hittable>>,
@@ -27,22 +26,26 @@ impl Hittable for HittableList {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut hit_anything: bool = false;
         let mut closest_so_far: f64 = t_max;
-        let mut rec = self.objects[0].hit(r, t_min, t_max).unwrap();
+        let mut i: i32 = -1;
+        let mut j = 0;
+        let mut temt = 0.0;
         for object in &self.objects {
+            i += 1;
             if let None = object.hit(r, t_min, closest_so_far) {
                 continue;
-            }
-            else{    
-                let mut temp_rec = object.hit(r, t_min, closest_so_far).unwrap();
+            } else {
+                let temp_rec = object.hit(r, t_min, closest_so_far).unwrap();
                 hit_anything = true;
+                temt = closest_so_far;
                 closest_so_far = temp_rec.t;
-                rec = temp_rec.clone();
+                j = i;
             }
         }
         if hit_anything {
-            return Some(rec);
+            return self.objects[j as usize].hit(r, t_min, temt);
+        } else {
+            None
         }
-        else {None}
     }
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut crate::aabb::AABB) -> bool {
         if self.objects.is_empty() {
@@ -76,5 +79,5 @@ impl Hittable for HittableList {
         self.objects[random_i32(0, int_size - 1) as usize].random(o)
     }
 }
-unsafe impl Sync for HittableList{}
-unsafe impl Send for HittableList{}
+unsafe impl Sync for HittableList {}
+unsafe impl Send for HittableList {}

@@ -1,19 +1,16 @@
-use crate::rtweekend::{random_cosine_direction, random_f64};
-use crate::vec3::random_in_hemisphere;
+use crate::rtweekend::random_f64;
 use crate::vec3::random_in_unit_sphere;
-use crate::vec3::random_unit_vector;
 use crate::vec3::reflect;
 use crate::vec3::refract;
 use crate::CosinePdf;
 use crate::HitRecord;
-use crate::Onb;
 use crate::Pdf;
 use crate::Ray;
 use crate::SolidColor;
 use crate::Texture;
 use crate::Vec3;
-use std::f64::consts::PI;
 use std::boxed::Box;
+use std::f64::consts::PI;
 
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
@@ -28,10 +25,10 @@ pub trait Material {
 }
 
 #[derive(Clone)]
-pub struct Lambertian<T:Texture> {
+pub struct Lambertian<T: Texture> {
     pub albedo: T,
 }
-impl<T:Texture> Lambertian<T> {
+impl<T: Texture> Lambertian<T> {
     pub fn new1(a: T) -> Self {
         Self { albedo: a }
     }
@@ -43,7 +40,7 @@ impl Lambertian<SolidColor> {
         }
     }
 }
-impl<T:Texture> Material for Lambertian<T> {
+impl<T: Texture> Material for Lambertian<T> {
     fn scatter(&self, r_in: Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
         srec.is_specular = false;
         srec.attenuation = self.albedo.value(rec.u, rec.v, rec.p);
@@ -133,22 +130,22 @@ pub fn schlick(cosine: f64, ref_idx: f64) -> f64 {
 }
 
 #[derive(Clone)]
-pub struct DiffuseLight<T:Texture> {
+pub struct DiffuseLight<T: Texture> {
     emit: T,
 }
-impl<T:Texture> DiffuseLight<T> {
+impl<T: Texture> DiffuseLight<T> {
     pub fn new1(a: T) -> Self {
         Self { emit: a }
     }
 }
-impl DiffuseLight<SolidColor>{
+impl DiffuseLight<SolidColor> {
     pub fn new2(c: Vec3) -> Self {
         Self {
             emit: SolidColor::new1(c),
         }
     }
 }
-impl<T:Texture> Material for DiffuseLight<T> {
+impl<T: Texture> Material for DiffuseLight<T> {
     fn scatter(&self, r_in: Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
         false
     }
@@ -161,22 +158,22 @@ impl<T:Texture> Material for DiffuseLight<T> {
     }
 }
 #[derive(Clone)]
-pub struct Isotropic<T:Texture> {
+pub struct Isotropic<T: Texture> {
     albedo: T,
 }
-impl<T:Texture> Isotropic<T> {
+impl<T: Texture> Isotropic<T> {
     pub fn new2(a: T) -> Self {
         Self { albedo: a }
     }
 }
-impl Isotropic<SolidColor>{
+impl Isotropic<SolidColor> {
     pub fn new1(c: Vec3) -> Self {
         Self {
             albedo: SolidColor::new1(c),
         }
     }
 }
-impl<T:Texture> Material for Isotropic<T> {
+impl<T: Texture> Material for Isotropic<T> {
     fn scatter(&self, r_in: Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
         srec.specular_ray = Ray::new(rec.p, random_in_unit_sphere(), r_in.tm);
         srec.attenuation = self.albedo.value(rec.u, rec.v, rec.p);

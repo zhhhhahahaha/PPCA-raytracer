@@ -32,16 +32,16 @@ impl Pdf for CosinePdf {
     }
 }
 #[derive(Clone)]
-pub struct HittablePdf<'a,T:Hittable> {
+pub struct HittablePdf<'a, T: Hittable> {
     pub o: Vec3,
     pub ptr: &'a T,
 }
-impl<'a, T:Hittable> HittablePdf<'a,T> {
-    pub fn new(p:&'a T, origin: Vec3) -> Self {
+impl<'a, T: Hittable> HittablePdf<'a, T> {
+    pub fn new(p: &'a T, origin: Vec3) -> Self {
         Self { ptr: p, o: origin }
     }
 }
-impl<'a, T:Hittable> Pdf for HittablePdf<'a, T> {
+impl<'a, T: Hittable> Pdf for HittablePdf<'a, T> {
     fn value(&self, direction: Vec3) -> f64 {
         self.ptr.pdf_value(self.o, direction)
     }
@@ -51,12 +51,12 @@ impl<'a, T:Hittable> Pdf for HittablePdf<'a, T> {
 }
 #[derive(Clone)]
 pub struct MixturePdf<'a> {
-    pub p0:&'a dyn Pdf,
-    pub p1:&'a dyn Pdf,
+    pub p0: &'a dyn Pdf,
+    pub p1: &'a dyn Pdf,
 }
 impl<'a> MixturePdf<'a> {
     pub fn new(p0: &'a dyn Pdf, p1: &'a dyn Pdf) -> Self {
-        Self { p0:p0, p1:p1 }
+        Self { p0: p0, p1: p1 }
     }
 }
 impl<'a> Pdf for MixturePdf<'a> {

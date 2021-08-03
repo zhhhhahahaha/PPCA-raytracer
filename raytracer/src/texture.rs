@@ -3,8 +3,8 @@ use crate::Perlin;
 use crate::Vec3;
 use image;
 use imageproc::drawing::Canvas;
-use std::vec::Vec;
 use std::str;
+use std::vec::Vec;
 
 pub trait Texture {
     fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3;
@@ -29,24 +29,24 @@ impl Texture for SolidColor {
     }
 }
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct CheckerTexture<T: Texture, U:Texture> {
+pub struct CheckerTexture<T: Texture, U: Texture> {
     odd: T,
     even: U,
 }
-impl<T: Texture, U: Texture> CheckerTexture<T,U> {
+impl<T: Texture, U: Texture> CheckerTexture<T, U> {
     pub fn new1(odd: T, even: U) -> Self {
         Self { odd, even }
     }
 }
-impl CheckerTexture<SolidColor, SolidColor>{
+impl CheckerTexture<SolidColor, SolidColor> {
     pub fn new2(c1: Vec3, c2: Vec3) -> Self {
         Self {
             even: SolidColor::new1(c1),
-            odd:  SolidColor::new1(c2),
+            odd: SolidColor::new1(c2),
         }
     }
 }
-impl<T: Texture,U: Texture> Texture for CheckerTexture<T, U>{
+impl<T: Texture, U: Texture> Texture for CheckerTexture<T, U> {
     fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         let sines: f64 = f64::sin(10.0 * p.x) * f64::sin(10.0 * p.y) * f64::sin(10.0 * p.z);
         if sines < 0.0 {

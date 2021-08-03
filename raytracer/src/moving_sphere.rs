@@ -7,7 +7,7 @@ use crate::Vec3;
 use crate::AABB;
 
 #[derive(Clone)]
-pub struct MovingSphere<T:Material> {
+pub struct MovingSphere<T: Material> {
     pub center0: Vec3,
     pub center1: Vec3,
     pub time0: f64,
@@ -15,15 +15,8 @@ pub struct MovingSphere<T:Material> {
     pub radius: f64,
     pub mat_ptr: T,
 }
-impl<T:Material> MovingSphere<T> {
-    pub fn new(
-        center0: Vec3,
-        center1: Vec3,
-        time0: f64,
-        time1: f64,
-        radius: f64,
-        m: T,
-    ) -> Self {
+impl<T: Material> MovingSphere<T> {
+    pub fn new(center0: Vec3, center1: Vec3, time0: f64, time1: f64, radius: f64, m: T) -> Self {
         Self {
             center0,
             center1,
@@ -39,7 +32,7 @@ impl<T:Material> MovingSphere<T> {
     }
 }
 
-impl<T:Material> Hittable for MovingSphere<T> {
+impl<T: Material> Hittable for MovingSphere<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vec3 = r.orig - self.center(r.tm);
         let a: f64 = r.dir.squared_length();
@@ -58,14 +51,14 @@ impl<T:Material> Hittable for MovingSphere<T> {
                 return None;
             }
         }
-        let mut rec = HitRecord{
+        let mut rec = HitRecord {
             t: root,
             p: r.at(root),
             mat_ptr: &self.mat_ptr,
-            u:0.0,
-            v:0.0,
-            front_face:true,
-            normal:Vec3::zero(),
+            u: 0.0,
+            v: 0.0,
+            front_face: true,
+            normal: Vec3::zero(),
         };
         let outward_normal: Vec3 = (rec.p - self.center(r.tm)) / self.radius;
         rec.set_face_normal(r, outward_normal);
