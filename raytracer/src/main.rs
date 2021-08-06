@@ -271,7 +271,7 @@ fn main() {
     let aspect_ratio: f64 = 1.0;
     const IMAGE_WIDTH: i32 = 600;
     const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
-    let samples_per_pixel: i32 = 10;
+    let samples_per_pixel: i32 = 1000;
     //world
     let mut lights =HittableList::new();
     lights.add(Box::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0)))));
