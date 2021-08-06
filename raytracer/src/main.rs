@@ -262,7 +262,7 @@ fn ray_color(r: Ray,background: Vec3, world: &Arc<HittableList>,lights: &Arc<Hit
 fn main() {
     let (tx, rx) = channel();
     let n_jobs: usize = 32;
-    let n_workers = 4;
+    let n_workers = 6;
     let pool = ThreadPool::new(n_workers);
     
     let bar = ProgressBar::new(n_jobs as u64);
@@ -271,7 +271,7 @@ fn main() {
     let aspect_ratio: f64 = 1.0;
     const IMAGE_WIDTH: i32 = 600;
     const IMAGE_HEIGHT: i32 = 600; //IMAGE_WIDTH / aspect_ratio
-    let samples_per_pixel: i32 = 1000;
+    let samples_per_pixel: i32 = 10;
     //world
     let mut lights =HittableList::new();
     lights.add(Box::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, DiffuseLight::new2(Vec3::new(7.0, 7.0, 7.0)))));
